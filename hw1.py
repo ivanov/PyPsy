@@ -102,10 +102,12 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         print '.',
         par[i,:]= out[0]
         chisqLL2[i] = out[1]
+    SEParams=std(par, axis=0)
+    covar=cov(par, rowvar=0)
     d[iExpectOrObserved] =  dict(
         meanParams=mean(par, axis=0)
-        ,SEParams=std(par, axis=0)
-        ,covar=cov(par, rowvar=0)
+        ,SEParams=SEParams
+        ,covar=covar
         ,SqrtOfVar=sqrt(diag(covar)).T
         ,Correlation1=corrcoef(par, rowvar=0)
         ,Correlation2=covar[0,1]/prod(SEParams)
