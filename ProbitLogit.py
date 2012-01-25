@@ -10,14 +10,14 @@ def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
     upper_asymptote=1; 
     z=(stim-param[0])*param[1];
     if ProbitOrLogit==1:
-        probFull=.5*(scipy.special.erf(z/sqrt(2))+1);#psychometric function going from 0 to 1
+        probFull=.5*(scipy.special.erf(z/np.sqrt(2))+1);#psychometric function going from 0 to 1
     else:
         probFull=1/(1+np.exp(-z));
-    end
     prob = lower_asymptote + (upper_asymptote-lower_asymptote)*probFull;
     Expect=prob*N;
     if ChisqOrLL==1:
-        LogLik = -2*sum((Obs*np.log(Expect/(Obs+finfo(float).eps)) +(N-Obs)*np.log((N-Expect)/(N-Obs+finfo(float).eps))));
+        LogLik = -2*sum((Obs*np.log(Expect/(Obs+np.finfo(float).eps))
+            +(N-Obs)*np.log((N-Expect)/(N-Obs+np.finfo(float).eps))));
     else:
         Chisq= sum((Obs-Expect)**2/Expect/(1-prob));
     
