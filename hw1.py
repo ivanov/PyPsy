@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from ProbitLogit import ProbitLogit
+import scipy.optimize as optimize
 
 print('******************************')
 dataset=1;   #1 for p. 69 data,  2 for p. 94 data
@@ -36,13 +37,23 @@ xlabel('Stimulus Intensity');ylabel('Probability Correct')
 ## now do the search
 #[params,chisqLL]=fminsearch('ProbitLogit',params0,[], StimLevels, NumPos, Ntrials,
 #    LowerAsymptote, ProbitOrLogit,1)
-#stimPlot=np.arange(-1.,8, .1);
-#[chisqLL, probExpect]=ProbitLogit(params,StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1) #for making plot
+def errfunc(*args):
+    return ProbitLogit(*args)[0]
+
+warn = 1
+while warn != 0:
+    out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
+        Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1); 
+    pfinal = out[0]  # Y 
+    warn = out[4]; params0 = out[0]
+pfinal = out[0]  # Y
+
+LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 ##[deviation, prob]=ProbitLogit(params, 1, stim, probs,lowerAsymp,optim,ProbLog) #to get prob
-#subplot(1,1,1);
-#plot(StimLevels,probExpect,'b',StimLevels,pObs,'r*')
-#error=np.sqrt(probExpect*(1-probExpect)/Ntrials);
-#errorbar(StimLevels,probExpect,error,'.');
+plt.plot(StimLevels,probExpect,'-b')
+error=np.sqrt(probExpect*(1-probExpect)/Ntrials);
+plt.errorbar(StimLevels,probExpect,error,fmt=None, ecolor='b');
+plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
 ##axis([-.1 16 0 1.05])
 ##plt.text(.12,.55,'chisqLL = ' num2str(chisqLL,2)])
 #xlabel('Stimulus Intensity'); title('Fit based on likelihood search')
@@ -119,3 +130,5 @@ xlabel('Stimulus Intensity');ylabel('Probability Correct')
 #    contourf(X,Y,LL.T,V);colorbar
 #    xlabel('75# correct (a)')
 #    ylabel('log slope (b)')
+
+plt.show()
