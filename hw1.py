@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ProbitLogit import ProbitLogit
 import scipy.optimize as optimize
+import sys
 
 print('******************************')
 dataset=1;   #1 for p. 69 data,  2 for p. 94 data
@@ -99,7 +100,7 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         #    NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1);
         out = optimize.fmin(errfunc, pfinal, args=(StimLevels, NumPos,
             Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, disp=0); 
-        print '.',
+        sys.stdout.write('.')
         par[i,:]= out[0]
         chisqLL2[i] = out[1]
     SEParams=std(par, axis=0)
