@@ -30,8 +30,8 @@ disp('from initial conditions')
 LogLik, p0=ProbitLogit(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 subplot(1,1,1)
 plot(StimLevels, pObs,'*r')
-plot(StimLevels,p0,'--b')
-title('Fit data based in initial guesses');
+plot(StimLevels,p0,'--b', label='initial conditions')
+title('Fit data');
 xlabel('Stimulus Intensity');ylabel('Probability Correct')
 
 ## now do the search
@@ -50,7 +50,7 @@ pfinal = out[0]  # Y
 
 LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 ##[deviation, prob]=ProbitLogit(params, 1, stim, probs,lowerAsymp,optim,ProbLog) #to get prob
-plt.plot(StimLevels,probExpect,'-b')
+plt.plot(StimLevels,probExpect,'-b', label='likelihood search')
 error=np.sqrt(probExpect*(1-probExpect)/Ntrials);
 plt.errorbar(StimLevels,probExpect,error,fmt=None, ecolor='b');
 plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
@@ -130,5 +130,6 @@ plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
 #    contourf(X,Y,LL.T,V);colorbar
 #    xlabel('75# correct (a)')
 #    ylabel('log slope (b)')
+plt.legend(loc='lower right')
 
 plt.show()
