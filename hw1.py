@@ -57,8 +57,8 @@ plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
 ##axis([-.1 16 0 1.05])
 ##plt.text(.12,.55,'chisqLL = ' num2str(chisqLL,2)])
 #xlabel('Stimulus Intensity'); title('Fit based on likelihood search')
-#Nlevels=length(probExpect);
-#degfree=Nlevels-2;    #predicted value of chisquare
+Nlevels=len(probExpect);
+degfree=Nlevels-2;    #predicted value of chisquare
 #ProbExact=Stats2Prob('chi',chisqLL, degfree, 0)
 ##[paramLSQ,chisqLSQ,fLSQ,EXITFLAG,OUTPUT,LAMBDA,j] = lsqnonlin('ProbitLogit',
 ##    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
@@ -80,33 +80,44 @@ if 1==1:   #for Log Likelihood
 print('chi square = %.2g' %(LogLikf))
 #
 ### Do parametric and nonparametric Monte Carlo simulations ('bootstraps')
-#for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
-#    if iExpectOrObserved==1:
-#        disp('parametric bootstrap')
-#        prob=probExpect
-#    else:
-#        disp('Nonparametric bootstrap')
-#        prob=pObs
-#    end
-#    Nsim=400;
-#    for i in range(Nsim):    #MonteCarlo simulations to get standard errors of params
-#        N=Ntrials(1);
-#        NumPos=sum(rand(N,Nlevels)<ones(N,1)*prob);#only for constant Ntrials
-#        options = optimset('Display','off');
-#        [par(i,:),chisqLL2(i)]=fminsearch('ProbitLogit',params,[], StimLevels,
-#            NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1);
-#    end
-#    meanParams=mean(par)
-#    SEParams=std(par)
-#    covar=cov(par)
-#    SqrtOfVar=sqrt(diag(covar))'
-#    Correlation1=corrcoef(par)
-#    Correlation2=covar(1,2)/prod(SEParams)
-#    meanChi=mean(chisqLL2)
-#    stdChi=std(chisqLL2)
-#    SEchiPredicted=sqrt(2*degfree)  #predicted SE of chisquareg
-#    ProbExact=Stats2Prob('chi',meanChi, degfree, 0)
-#
+d = {}
+for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
+    if iExpectOrObserved==1:
+        disp('parametric bootstrap')
+        prob=probExpect
+    else:
+        disp('Nonparametric bootstrap')
+        prob=pObs
+    Nsim=400;
+    par = np.empty((Nsim,2))
+    chisqLL2 = np.empty(Nsim)
+    for i in range(Nsim):    #MonteCarlo simulations to get standard errors of params
+        N=Ntrials[0];
+        NumPos=sum(rand(N,Nlevels)<np.ones((N,1))*prob, axis=0);#only for constant Ntrials
+        #options = optimset('Display','off');
+        #[par[i,:],chisqLL2(i)]=fminsearch('ProbitLogit',params,[], StimLevels,
+        #    NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1);
+        out = optimize.fmin(errfunc, pfinal, args=(StimLevels, NumPos,
+            Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, disp=0); 
+        print '.',
+        par[i,:]= out[0]
+        chisqLL2[i] = out[1]
+    d[iExpectOrObserved] =  dict(
+        meanParams=mean(par, axis=0)
+        ,SEParams=std(par, axis=0)
+        ,covar=cov(par, rowvar=0)
+        ,SqrtOfVar=sqrt(diag(covar)).T
+        ,Correlation1=corrcoef(par, rowvar=0)
+        ,Correlation2=covar[0,1]/prod(SEParams)
+        ,meanChi=mean(chisqLL2, axis=0)
+        ,stdChi=std(chisqLL2, axis=0)
+        ,SEchiPredicted=sqrt(2*degfree)  #predicted SE of chisquareg
+        )
+    #print d
+    #ProbExact=Stats2Prob('chi',meanChi, degfree, 0)
+
+
+
 #end
 ### make contour plots
 #LL=[];
