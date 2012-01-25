@@ -62,11 +62,11 @@ plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
 #ProbExact=Stats2Prob('chi',chisqLL, degfree, 0)
 ##[paramLSQ,chisqLSQ,fLSQ,EXITFLAG,OUTPUT,LAMBDA,j] = lsqnonlin('ProbitLogit',
 ##    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
-#if 1==1:   #for Log Likelihood
-#    #text(.12,.5 ,['JND = ' num2str(1/params(2),2) ])
-#    #text(.12,.45,['PSE = ' num2str(params(1),2)])
-#    #disp(['JND = ' num2str(1/params(2),4)])  #this prints out the inverse of slope
-#    #disp(['PSE = ' num2str(params(1),4) ])  #this give offset
+if 1==1:   #for Log Likelihood
+    text(.12,.5 , 'JND = %.2g' % (1./pfinal[1]) )
+    text(.12,.45, 'PSE = %.2g' % pfinal[0])
+    print('JND = %.4g ' % (1./pfinal[1]))  #this prints out the inverse of slope
+    print('PSE = %.4g ' % (pfinal[0]) )  #this give offset
 #    pass
 #else:   #For chi square (not yet implimented
 #    j=full(j);  #something about sparse matrices
@@ -77,7 +77,7 @@ plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
 #    disp(['JND = ' num2str(params(1),3) ' +- ' num2str(SE(1),2)])
 #    disp(['PSE = ' num2str(params(2),3) ' +- ' num2str(SE(2),2)])
 #end
-#disp(['chi square = ' num2str(chisqLL,2)])
+print('chi square = %.2g' %(LogLikf))
 #
 ### Do parametric and nonparametric Monte Carlo simulations ('bootstraps')
 #for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
