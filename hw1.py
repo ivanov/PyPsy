@@ -48,14 +48,15 @@ LowerAsymptote=paramInit[2];
 ProbitOrLogit=2;#1 is probit, 2 is logit  (probit means cumulative normal)
 print "running dataset #",dataset
 print '*'*30
-disp('from initial conditions')
+print 'from initial conditions'
 LogLik, p0=ProbitLogit(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 if plot_opt in ('both','pf'):
-    subplot(1,1,1)
-    plot(StimLevels, pObs,'*r')
-    plot(StimLevels,p0,'--b', label='initial conditions')
-    title('Fit data');
-    xlabel('Stimulus Intensity');ylabel('Probability Correct')
+    plt.subplot(1,1,1)
+    plt.plot(StimLevels, pObs,'*r')
+    plt.plot(StimLevels,p0,'--b', label='initial conditions')
+    plt.title('Fit data');
+    plt.xlabel('Stimulus Intensity');
+    plt.ylabel('Probability Correct')
 
 ## now do the search
 #[params,chisqLL]=fminsearch('ProbitLogit',params0,[], StimLevels, NumPos, Ntrials,
@@ -83,17 +84,17 @@ if plot_opt in ('both','pf'):
 Nlevels=len(probExpect);
 degfree=Nlevels-2.;    #predicted value of chisquare
 ProbExact=1-special.gammainc(degfree/2., LogLikf/2.)
-print('ProbExact = %.4g ' % ProbExact )
+print 'ProbExact = %.4g ' % ProbExact 
 ##[paramLSQ,chisqLSQ,fLSQ,EXITFLAG,OUTPUT,LAMBDA,j] = lsqnonlin('ProbitLogit',
 ##    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
 if 1==1:   #for Log Likelihood
     if plot_opt in ('both','pf'):
-        text(StimLevels[-1]*.9,.5 , 'JND = %.2g' % (1./pfinal[1]) )
-        text(StimLevels[-1]*0.9,.45, 'PSE = %.2g' % pfinal[0])
+        plt.text(StimLevels[-1]*.9,.5 , 'JND = %.2g' % (1./pfinal[1]) )
+        plt.text(StimLevels[-1]*0.9,.45, 'PSE = %.2g' % pfinal[0])
         plt.legend(loc='best')
         plt.show()
-    print('JND = %.4g ' % (1./pfinal[1]))  #this prints out the inverse of slope
-    print('PSE = %.4g ' % (pfinal[0]) )  #this give offset
+    print 'JND = %.4g ' % (1./pfinal[1])  #this prints out the inverse of slope
+    print 'PSE = %.4g ' % (pfinal[0])   #this give offset
 #    pass
 #else:   #For chi square (not yet implimented
 #    j=full(j);  #something about sparse matrices
@@ -101,26 +102,26 @@ if 1==1:   #for Log Likelihood
 #    SE=sqrt(diag(cov))';#Standard error
 #    text(.2,.9,['JND = ' num2str(params(1))  ' +- ' num2str(SE(1)) ])
 #    text(.2,.84,['PSE = ' num2str(params(2)) ' +- ' num2str(SE(2)) ])
-#    disp(['JND = ' num2str(params(1),3) ' +- ' num2str(SE(1),2)])
-#    disp(['PSE = ' num2str(params(2),3) ' +- ' num2str(SE(2),2)])
+#    print ['JND = ' num2str(params(1),3) ' +- ' num2str(SE(1),2)]
+#    print ['PSE = ' num2str(params(2),3) ' +- ' num2str(SE(2),2)]
 #end
-print('chi square = %.2g' %(LogLikf))
+print 'chi square = %.2g' %(LogLikf)
 #
 ### Do parametric and nonparametric Monte Carlo simulations ('bootstraps')
 d = {}
 for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
     if iExpectOrObserved==1:
-        disp('parametric bootstrap')
+        print 'parametric bootstrap'
         prob=probExpect
     else:
-        disp('Nonparametric bootstrap')
+        print 'Nonparametric bootstrap'
         prob=pObs
     Nsim = numBootstraps;
     par = np.empty((Nsim,2))
     chisqLL2 = np.empty(Nsim)
     for i in range(Nsim):    #MonteCarlo simulations to get standard errors of params
         N=Ntrials[0];
-        NumPos=sum(rand(N,Nlevels)<np.ones((N,1))*prob, axis=0);#only for constant Ntrials
+        NumPos=np.sum(np.random.rand(N,Nlevels)<np.ones((N,1))*prob, axis=0);#only for constant Ntrials
         #options = optimset('Display','off');
         #[par[i,:],chisqLL2(i)]=fminsearch('ProbitLogit',params,[], StimLevels,
         #    NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1);
@@ -130,25 +131,25 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         par[i,:]= out[0]
         chisqLL2[i] = out[1]
     sys.stdout.write('\n')
-    SEParams=std(par, axis=0)
-    covar=cov(par, rowvar=0)
-    meanChi=mean(chisqLL2, axis=0)
+    SEParams=par.std(axis=0)
+    covar=np.cov(par, rowvar=0)
+    meanChi=chisqLL2.mean(axis=0)
     d[iExpectOrObserved] =  dict(
-        meanParams=mean(par, axis=0)
+        meanParams=par.mean(axis=0)
         ,SEParams=SEParams
         ,covar=covar
-        ,SqrtOfVar=sqrt(diag(covar)).T
-        ,Correlation1=corrcoef(par, rowvar=0)
-        ,Correlation2=covar[0,1]/prod(SEParams)
+        ,SqrtOfVar=np.sqrt(np.diag(covar)).T
+        ,Correlation1=np.corrcoef(par, rowvar=0)
+        ,Correlation2=covar[0,1]/np.prod(SEParams)
         ,meanChi=meanChi
-        ,stdChi=std(chisqLL2, axis=0)
-        ,SEchiPredicted=sqrt(2.*degfree)  #predicted SE of chisquareg
+        ,stdChi=chisqLL2.std(axis=0)
+        ,SEchiPredicted=np.sqrt(2.*degfree)  #predicted SE of chisquareg
         ,pvalue_chisq=1.-special.gammainc(degfree/2., meanChi/2.)
         )
     dprint(d[iExpectOrObserved])
     #ProbExact=Stats2Prob('chi',meanChi, degfree, 0)
     #pvalue_chisq=1-special.gammainc(meanChi/2,degfree/2)
-    #print('pvalue_chisq = %.4g ' % pvalue_chisq )
+    #print 'pvalue_chisq = %.4g ' % pvalue_chisq 
 
 
 
@@ -170,12 +171,12 @@ if dataset==2 and plot_opt in ('both','contour'):
                 Ntrials, LowerAsymptote, ProbitOrLogit,1);
             LL[i1,i2]=LogLik;
     chimin= LL.min()
-    figure(2)
+    plt.figure(2)
     X=p1; # xxx: is this **0 supposed to be matrix exponentiation?
     Y=logp2;
     V=chimin+.125*2**np.arange(0,8.001);
     plt.contourf(X,Y,LL.T,V);
     plt.colorbar()
-    xlabel('75% correct (a)')
-    ylabel('log slope (b)')
+    plt.xlabel('75% correct (a)')
+    plt.ylabel('log slope (b)')
     plt.show()
