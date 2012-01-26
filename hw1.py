@@ -6,7 +6,7 @@ import scipy.optimize as optimize
 import sys
 
 print('******************************')
-dataset=1;   #1 for p. 69 data,  2 for p. 94 data
+dataset=2;   #1 for p. 69 data,  2 for p. 94 data
 if dataset==1:   # Data on p. 69 of Kingdom/Prins
     StimLevels=np.array([.01, .03, .05, .07, .09, .11])   #see details on p. 69
     NumPos=np.array([45., 55, 72, 85, 91, 100])
@@ -79,6 +79,8 @@ if 1==1:   #for Log Likelihood
 #    disp(['PSE = ' num2str(params(2),3) ' +- ' num2str(SE(2),2)])
 #end
 print('chi square = %.2g' %(LogLikf))
+plt.legend(loc='lower right')
+plt.show()
 #
 ### Do parametric and nonparametric Monte Carlo simulations ('bootstraps')
 d = {}
@@ -89,7 +91,7 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
     else:
         disp('Nonparametric bootstrap')
         prob=pObs
-    Nsim=400;
+    Nsim=40;
     par = np.empty((Nsim,2))
     chisqLL2 = np.empty(Nsim)
     for i in range(Nsim):    #MonteCarlo simulations to get standard errors of params
@@ -123,27 +125,29 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
 
 #end
 ### make contour plots
-#LL=[];
-#if dataset==2,
-#    NumPos=[2, 3, 3, 3, 4];
-#    p1=np.arange(-2,2.001,.1);   #should be centered at params(1), extent given by SE(1)
-#    logp2=np.arange(-1.,1.,.1);
-#    for i1 in range(length(p1)):
-#        for i2 in range(length(logp2)):
-#            param=[p1(i1) 10.^logp2(i2)];
-#            [LogLik, p0]=ProbitLogit(param, StimLevels, NumPos,
-#                Ntrials, LowerAsymptote, ProbitOrLogit,1);
-#            LL(i1,i2)=LogLik;
-#        end
-#    end
-#    chimin=min(min(LL));
-#    figure(2)
-#    X=logp2.T**0*p1; # xxx: is this **0 supposed to be matrix exponentiation?
-#    Y=logp2.T.dot(p1).^0;
-#    V=chimin+.125*2**np.arange(0,8.001);
-#    contourf(X,Y,LL.T,V);colorbar
-#    xlabel('75# correct (a)')
-#    ylabel('log slope (b)')
-plt.legend(loc='lower right')
+
+# XXX: it'd be nice to do contour plots *independent* of what dataset we're
+# plotting (e.g. take the optimal solution we get, and then explore a
+# parameter grid around that solution)
+if dataset==2:
+    NumPos=[2, 3, 3, 3, 4];
+    p1=np.arange(-2,2.001,.1);   #should be centered at params(1), extent given by SE(1)
+    logp2=np.arange(-1.,1.,.1);
+    LL=np.empty(p1.shape+logp2.shape)
+    for i1 in range(len(p1)):
+        for i2 in range(len(logp2)):
+            param=np.array([p1[i1],10**logp2[i2]]);
+            [LogLik, p0]=ProbitLogit(param, StimLevels, NumPos,
+                Ntrials, LowerAsymptote, ProbitOrLogit,1);
+            LL[i1,i2]=LogLik;
+    chimin= LL.min()
+    figure(2)
+    X=p1; # xxx: is this **0 supposed to be matrix exponentiation?
+    Y=logp2;
+    V=chimin+.125*2**np.arange(0,8.001);
+    plt.contourf(X,Y,LL.T,V);
+    plt.colorbar()
+    xlabel('75% correct (a)')
+    ylabel('log slope (b)')
 
 plt.show()

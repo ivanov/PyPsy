@@ -115,6 +115,6 @@ if dataset==2,
     Y=logp2'*p1.^0;
     V=chimin+.125*2.^[0:8];
     contourf(X,Y,LL',V);colorbar
-    xlabel('75% correct (a)')
+    xlabel('75\% correct (a)')
     ylabel('log slope (b)')
 end
