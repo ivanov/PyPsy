@@ -65,11 +65,11 @@ def errfunc(*args):
     return ProbitLogit(*args)[0]
 
 warn = 1
-while warn != 0:
-    out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
-        Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1);
-    pfinal = out[0]  # Y
-    warn = out[4]; params0 = out[0]
+#while warn != 0:
+out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
+    Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1);
+pfinal = out[0]  # Y
+warn = out[4]; params0 = out[0]
 pfinal = out[0]  # Y
 
 LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
