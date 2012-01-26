@@ -79,7 +79,6 @@ if plot_opt in ('both','pf'):
     plt.errorbar(StimLevels,probExpect,error,fmt=None, ecolor='b');
     plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
     ##axis([-.1 16 0 1.05])
-    plt.text(StimLevels[-1]*.9,.55,'chisqLL = %.2g' % (LogLikf))
     #xlabel('Stimulus Intensity'); title('Fit based on likelihood search')
 Nlevels=len(probExpect);
 degfree=Nlevels-2.;    #predicted value of chisquare
@@ -89,8 +88,11 @@ print 'ProbExact = %.4g ' % ProbExact
 ##    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
 if 1==1:   #for Log Likelihood
     if plot_opt in ('both','pf'):
-        plt.text(StimLevels[-1]*.9,.5 , 'JND = %.2g' % (1./pfinal[1]) )
-        plt.text(StimLevels[-1]*0.9,.45, 'PSE = %.2g' % pfinal[0])
+        ax = plt.gca()
+        kw =dict( ha='right',
+                transform=ax.transAxes)
+        results = 'chisqLL = %.2g\nJND = %.2g\nPSE = %.2g'
+        plt.text(.95,.05 ,  results% (LogLikf,(1./pfinal[1]),pfinal[0]) , **kw)
         plt.legend(loc='best')
         plt.show()
     print 'JND = %.4g ' % (1./pfinal[1])  #this prints out the inverse of slope
