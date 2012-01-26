@@ -6,6 +6,6 @@ allparams = np.empty( (griddims,griddims,2) )
 
 for nx,x in enumerate( xidxs):
     for ny,y in enumerate( yidxs):
-        run -i hw1.py 2 2 neither $x $y 0 0
+        run -i hw1.py 2 0 neither $x $y 0 0
         allparams[nx,ny] = pfinal 
 

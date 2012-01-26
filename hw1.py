@@ -107,49 +107,47 @@ if 1==1:   #for Log Likelihood
 #end
 print 'chi square = %.2g' %(LogLikf)
 #
+if numBootstraps>1:
 ### Do parametric and nonparametric Monte Carlo simulations ('bootstraps')
-d = {}
-for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
-    if iExpectOrObserved==1:
-        print 'parametric bootstrap'
-        prob=probExpect
-    else:
-        print 'Nonparametric bootstrap'
-        prob=pObs
-    Nsim = numBootstraps;
-    par = np.empty((Nsim,2))
-    chisqLL2 = np.empty(Nsim)
-    for i in range(Nsim):    #MonteCarlo simulations to get standard errors of params
-        N=Ntrials[0];
-        NumPos=np.sum(np.random.rand(N,Nlevels)<np.ones((N,1))*prob, axis=0);#only for constant Ntrials
-        #options = optimset('Display','off');
-        #[par[i,:],chisqLL2(i)]=fminsearch('ProbitLogit',params,[], StimLevels,
-        #    NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1);
-        out = optimize.fmin(errfunc, pfinal, args=(StimLevels, NumPos,
-            Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, disp=0);
-        sys.stdout.write('.')
-        par[i,:]= out[0]
-        chisqLL2[i] = out[1]
-    sys.stdout.write('\n')
-    SEParams=par.std(axis=0)
-    covar=np.cov(par, rowvar=0)
-    meanChi=chisqLL2.mean(axis=0)
-    d[iExpectOrObserved] =  dict(
-        meanParams=par.mean(axis=0)
-        ,SEParams=SEParams
-        ,covar=covar
-        ,SqrtOfVar=np.sqrt(np.diag(covar)).T
-        ,Correlation1=np.corrcoef(par, rowvar=0)
-        ,Correlation2=covar[0,1]/np.prod(SEParams)
-        ,meanChi=meanChi
-        ,stdChi=chisqLL2.std(axis=0)
-        ,SEchiPredicted=np.sqrt(2.*degfree)  #predicted SE of chisquareg
-        ,pvalue_chisq=1.-special.gammainc(degfree/2., meanChi/2.)
-        )
-    dprint(d[iExpectOrObserved])
-    #ProbExact=Stats2Prob('chi',meanChi, degfree, 0)
-    #pvalue_chisq=1-special.gammainc(meanChi/2,degfree/2)
-    #print 'pvalue_chisq = %.4g ' % pvalue_chisq 
+    d = {}
+    for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
+        if iExpectOrObserved==1:
+            print 'parametric bootstrap'
+            prob=probExpect
+        else:
+            print 'Nonparametric bootstrap'
+            prob=pObs
+        Nsim = numBootstraps;
+        par = np.empty((Nsim,2))
+        chisqLL2 = np.empty(Nsim)
+        for i in range(Nsim):    #MonteCarlo simulations to get standard errors of params
+            N=Ntrials[0];
+            NumPos=np.sum(np.random.rand(N,Nlevels)<np.ones((N,1))*prob, axis=0);#only for constant Ntrials
+            #options = optimset('Display','off');
+            #[par[i,:],chisqLL2(i)]=fminsearch('ProbitLogit',params,[], StimLevels,
+            #    NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1);
+            out = optimize.fmin(errfunc, pfinal, args=(StimLevels, NumPos,
+                Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, disp=0);
+            sys.stdout.write('.')
+            par[i,:]= out[0]
+            chisqLL2[i] = out[1]
+        sys.stdout.write('\n')
+        SEParams=par.std(axis=0)
+        covar=np.cov(par, rowvar=0)
+        meanChi=chisqLL2.mean(axis=0)
+        d[iExpectOrObserved] =  dict(
+            meanParams=par.mean(axis=0)
+            ,SEParams=SEParams
+            ,covar=covar
+            ,SqrtOfVar=np.sqrt(np.diag(covar)).T
+            ,Correlation1=np.corrcoef(par, rowvar=0)
+            ,Correlation2=covar[0,1]/np.prod(SEParams)
+            ,meanChi=meanChi
+            ,stdChi=chisqLL2.std(axis=0)
+            ,SEchiPredicted=np.sqrt(2.*degfree)  #predicted SE of chisquareg
+            ,pvalue_chisq=1.-special.gammainc(degfree/2., meanChi/2.)
+            )
+        dprint(d[iExpectOrObserved])
 
 
 
