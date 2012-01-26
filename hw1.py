@@ -56,7 +56,7 @@ error=np.sqrt(probExpect*(1-probExpect)/Ntrials);
 plt.errorbar(StimLevels,probExpect,error,fmt=None, ecolor='b');
 plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
 ##axis([-.1 16 0 1.05])
-##plt.text(.12,.55,'chisqLL = ' num2str(chisqLL,2)])
+plt.text(StimLevels[-1]*.9,.55,'chisqLL = %.2g' % (LogLikf))
 #xlabel('Stimulus Intensity'); title('Fit based on likelihood search')
 Nlevels=len(probExpect);
 degfree=Nlevels-2;    #predicted value of chisquare
@@ -65,8 +65,8 @@ print('ProbExact = %.4g ' % ProbExact )
 ##[paramLSQ,chisqLSQ,fLSQ,EXITFLAG,OUTPUT,LAMBDA,j] = lsqnonlin('ProbitLogit',
 ##    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
 if 1==1:   #for Log Likelihood
-    text(.12,.5 , 'JND = %.2g' % (1./pfinal[1]) )
-    text(.12,.45, 'PSE = %.2g' % pfinal[0])
+    text(StimLevels[-1]*.9,.5 , 'JND = %.2g' % (1./pfinal[1]) )
+    text(StimLevels[-1]*0.9,.45, 'PSE = %.2g' % pfinal[0])
     print('JND = %.4g ' % (1./pfinal[1]))  #this prints out the inverse of slope
     print('PSE = %.4g ' % (pfinal[0]) )  #this give offset
 #    pass
@@ -80,7 +80,7 @@ if 1==1:   #for Log Likelihood
 #    disp(['PSE = ' num2str(params(2),3) ' +- ' num2str(SE(2),2)])
 #end
 print('chi square = %.2g' %(LogLikf))
-plt.legend(loc='lower right')
+plt.legend(loc='best')
 plt.show()
 #
 ### Do parametric and nonparametric Monte Carlo simulations ('bootstraps')
