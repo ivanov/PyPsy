@@ -8,14 +8,13 @@ import scipy.special as special
 
 from utils import dprint
 
-print('******************************')
+print '*'*30
 
 dataset = 1 #1 for p. 69 data,  2 for p. 94 data
 numBootstraps = 10
 plot_opt = 'both'
 param_Init =  None
 
-print sys.argv
 if len(sys.argv) > 1:
     dataset = int(sys.argv[1])
 if len(sys.argv) > 2:
@@ -47,6 +46,8 @@ pObs=NumPos/Ntrials;  #probability correct
 params0=paramInit[0:2];
 LowerAsymptote=paramInit[2];
 ProbitOrLogit=2;#1 is probit, 2 is logit  (probit means cumulative normal)
+print "running dataset #",dataset
+print '*'*30
 disp('from initial conditions')
 LogLik, p0=ProbitLogit(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 if plot_opt in ('both','pf'):
@@ -65,8 +66,8 @@ def errfunc(*args):
 warn = 1
 while warn != 0:
     out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
-        Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1); 
-    pfinal = out[0]  # Y 
+        Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1);
+    pfinal = out[0]  # Y
     warn = out[4]; params0 = out[0]
 pfinal = out[0]  # Y
 
@@ -80,8 +81,8 @@ if plot_opt in ('both','pf'):
     plt.text(StimLevels[-1]*.9,.55,'chisqLL = %.2g' % (LogLikf))
     #xlabel('Stimulus Intensity'); title('Fit based on likelihood search')
 Nlevels=len(probExpect);
-degfree=Nlevels-2;    #predicted value of chisquare
-ProbExact=1-special.gammainc(degfree/2, LogLikf/2) 
+degfree=Nlevels-2.;    #predicted value of chisquare
+ProbExact=1-special.gammainc(degfree/2., LogLikf/2.)
 print('ProbExact = %.4g ' % ProbExact )
 ##[paramLSQ,chisqLSQ,fLSQ,EXITFLAG,OUTPUT,LAMBDA,j] = lsqnonlin('ProbitLogit',
 ##    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
@@ -124,7 +125,7 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         #[par[i,:],chisqLL2(i)]=fminsearch('ProbitLogit',params,[], StimLevels,
         #    NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1);
         out = optimize.fmin(errfunc, pfinal, args=(StimLevels, NumPos,
-            Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, disp=0); 
+            Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, disp=0);
         sys.stdout.write('.')
         par[i,:]= out[0]
         chisqLL2[i] = out[1]
@@ -141,12 +142,12 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         ,Correlation2=covar[0,1]/prod(SEParams)
         ,meanChi=meanChi
         ,stdChi=std(chisqLL2, axis=0)
-        ,SEchiPredicted=sqrt(2*degfree)  #predicted SE of chisquareg
-        ,pvalue_chisq=1-special.gammainc(degfree/2, meanChi/2) 
+        ,SEchiPredicted=sqrt(2.*degfree)  #predicted SE of chisquareg
+        ,pvalue_chisq=1.-special.gammainc(degfree/2., meanChi/2.)
         )
     dprint(d[iExpectOrObserved])
     #ProbExact=Stats2Prob('chi',meanChi, degfree, 0)
-    #pvalue_chisq=1-special.gammainc(meanChi/2,degfree/2) 
+    #pvalue_chisq=1-special.gammainc(meanChi/2,degfree/2)
     #print('pvalue_chisq = %.4g ' % pvalue_chisq )
 
 
