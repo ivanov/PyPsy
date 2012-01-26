@@ -6,6 +6,8 @@ import scipy.optimize as optimize
 import sys
 import scipy.special as special
 
+from utils import dprint
+
 print('******************************')
 dataset=1;   #1 for p. 69 data,  2 for p. 94 data
 if dataset==1:   # Data on p. 69 of Kingdom/Prins
@@ -122,7 +124,7 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         ,SEchiPredicted=sqrt(2*degfree)  #predicted SE of chisquareg
         ,pvalue_chisq=1-special.gammainc(meanChi/2,degfree/2) 
         )
-    print d[iExpectOrObserved]
+    dprint(d[iExpectOrObserved])
     #ProbExact=Stats2Prob('chi',meanChi, degfree, 0)
     #pvalue_chisq=1-special.gammainc(meanChi/2,degfree/2) 
     #print('pvalue_chisq = %.4g ' % pvalue_chisq )
