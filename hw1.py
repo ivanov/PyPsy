@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 from ProbitLogit import ProbitLogit
 import scipy.optimize as optimize
 import sys
+import scipy.special as special
 
 print('******************************')
-dataset=2;   #1 for p. 69 data,  2 for p. 94 data
+dataset=1;   #1 for p. 69 data,  2 for p. 94 data
 if dataset==1:   # Data on p. 69 of Kingdom/Prins
     StimLevels=np.array([.01, .03, .05, .07, .09, .11])   #see details on p. 69
     NumPos=np.array([45., 55, 72, 85, 91, 100])
@@ -50,7 +51,6 @@ while warn != 0:
 pfinal = out[0]  # Y
 
 LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
-##[deviation, prob]=ProbitLogit(params, 1, stim, probs,lowerAsymp,optim,ProbLog) #to get prob
 plt.plot(StimLevels,probExpect,'-b', label='likelihood search')
 error=np.sqrt(probExpect*(1-probExpect)/Ntrials);
 plt.errorbar(StimLevels,probExpect,error,fmt=None, ecolor='b');
@@ -60,7 +60,8 @@ plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
 #xlabel('Stimulus Intensity'); title('Fit based on likelihood search')
 Nlevels=len(probExpect);
 degfree=Nlevels-2;    #predicted value of chisquare
-#ProbExact=Stats2Prob('chi',chisqLL, degfree, 0)
+ProbExact=1-special.gammainc(LogLikf/2,degfree/2) 
+print('ProbExact = %.4g ' % ProbExact )
 ##[paramLSQ,chisqLSQ,fLSQ,EXITFLAG,OUTPUT,LAMBDA,j] = lsqnonlin('ProbitLogit',
 ##    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
 if 1==1:   #for Log Likelihood
@@ -105,8 +106,10 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         sys.stdout.write('.')
         par[i,:]= out[0]
         chisqLL2[i] = out[1]
+    sys.stdout.write('\n')
     SEParams=std(par, axis=0)
     covar=cov(par, rowvar=0)
+    meanChi=mean(chisqLL2, axis=0)
     d[iExpectOrObserved] =  dict(
         meanParams=mean(par, axis=0)
         ,SEParams=SEParams
@@ -114,12 +117,15 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         ,SqrtOfVar=sqrt(diag(covar)).T
         ,Correlation1=corrcoef(par, rowvar=0)
         ,Correlation2=covar[0,1]/prod(SEParams)
-        ,meanChi=mean(chisqLL2, axis=0)
+        ,meanChi=meanChi
         ,stdChi=std(chisqLL2, axis=0)
         ,SEchiPredicted=sqrt(2*degfree)  #predicted SE of chisquareg
+        ,pvalue_chisq=1-special.gammainc(meanChi/2,degfree/2) 
         )
-    #print d
+    print d[iExpectOrObserved]
     #ProbExact=Stats2Prob('chi',meanChi, degfree, 0)
+    #pvalue_chisq=1-special.gammainc(meanChi/2,degfree/2) 
+    #print('pvalue_chisq = %.4g ' % pvalue_chisq )
 
 
 
