@@ -1,12 +1,19 @@
-griddims = 30
-xidxs = linspace( -2.0, 2.0, griddims)
-yidxs = linspace( 0.0, 1.0, griddims)
+griddims = 10
+dataset = 2
+
+# TODO: These should just come from the max/min of datasets
+if dataset==1:
+    xidxs = linspace( 0.0, 0.11, griddims)
+    yidxs = linspace( 0.0, 100.0, griddims)
+else:
+    xidxs = linspace( -2.0, 2.0, griddims)
+    yidxs = linspace( 0.0, 4.0, griddims)
 
 allparams = np.empty( (griddims,griddims,2) )
 allprobs = np.empty( (griddims,griddims) )
 
 for nx,x in enumerate( xidxs):
     for ny,y in enumerate( yidxs):
-        run -i hw1.py 2 0 neither $x $y 0 0
+        run -i hw1.py $dataset 0 neither $x $y 0 0
         allparams[nx,ny] = pfinal 
         allprobs[nx,ny] = ProbExact
