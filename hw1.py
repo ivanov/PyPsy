@@ -22,7 +22,7 @@ if len(sys.argv) > 2:
 if len(sys.argv) > 3:
     plot_opt = sys.argv[3]
 if len(sys.argv) > 4:
-    param_Init  = np.array(sys.argv[4:])
+    param_Init  = np.array([float(anarg) for anarg in sys.argv[4:]])
 
 if dataset==1:   # Data on p. 69 of Kingdom/Prins
     StimLevels=np.array([.01, .03, .05, .07, .09, .11])   #see details on p. 69
