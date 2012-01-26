@@ -1,0 +1,11 @@
+griddims = 3
+xidxs = linspace( -1.0, 1.0, griddims)
+yidxs = linspace( 0.5, 1.5, griddims)
+
+allparams = np.empty( (griddims,griddims,2) )
+
+for nx,x in enumerate( xidxs):
+    for ny,y in enumerate( yidxs):
+        run -i hw1.py 2 2 neither $x $y 0 0
+        allparams[nx,ny] = pfinal 
+
