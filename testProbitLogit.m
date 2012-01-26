@@ -43,16 +43,16 @@ plot(StimLevels,probExpect,'b',StimLevels,pObs,'r*');hold on
 error=sqrt(probExpect.*(1-probExpect)./Ntrials);
 errorbar(StimLevels,probExpect,error,'.');
 %axis([-.1 16 0 1.05])
-text(.12,.55,['chisqLL = ' num2str(chisqLL,2)])
+text(StimLevels(end)*.9,.55,['chisqLL = ' num2str(chisqLL,2)])
 xlabel('Stimulus Intensity'); title('Fit based on likelihood search')
 Nlevels=length(probExpect);
 degfree=Nlevels-2;    %predicted value of chisquare
-ProbExact=Stats2Prob('chi',chisqLL, degfree, 0)
+ProbExact=1-gammainc(chisqLL/2,degfree/2)
 %[paramLSQ,chisqLSQ,fLSQ,EXITFLAG,OUTPUT,LAMBDA,j] = lsqnonlin('ProbitLogit',...
 %    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
 if 1==1,   %for Log Likelihood
-    text(.12,.5 ,['JND = ' num2str(1/params(2),2) ])
-    text(.12,.45,['PSE = ' num2str(params(1),2)])
+    text(StimLevels(end)*.9,.5 ,['JND = ' num2str(1/params(2),2) ])
+    text(StimLevels(end)*.9,.45,['PSE = ' num2str(params(1),2)])
     disp(['JND = ' num2str(1/params(2),4)])  %this prints out the inverse of slope
     disp(['PSE = ' num2str(params(1),4) ])  %this give offset
 else   %For chi square (not yet implimented
@@ -92,8 +92,8 @@ for iExpectOrObserved=1:2, %for parametric vs nonparametric
     meanChi=mean(chisqLL2)
     stdChi=std(chisqLL2)
     SEchiPredicted=sqrt(2*degfree)  %predicted SE of chisquareg
-    ProbExact=Stats2Prob('chi',meanChi, degfree, 0)
-    
+    pvalue_chisq=1-gammainc(meanChi/2,degfree/2)  %p-value for chisq
+
 end
 %% make contour plots
 LL=[];
@@ -115,6 +115,6 @@ if dataset==2,
     Y=logp2'*p1.^0;
     V=chimin+.125*2.^[0:8];
     contourf(X,Y,LL',V);colorbar
-    xlabel('75\% correct (a)')
+    xlabel('75% correct (a)')
     ylabel('log slope (b)')
 end
