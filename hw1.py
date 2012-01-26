@@ -60,7 +60,7 @@ plt.ylim(plt.ylim()[0],plt.ylim()[1]+.01)
 #xlabel('Stimulus Intensity'); title('Fit based on likelihood search')
 Nlevels=len(probExpect);
 degfree=Nlevels-2;    #predicted value of chisquare
-ProbExact=1-special.gammainc(LogLikf/2,degfree/2) 
+ProbExact=1-special.gammainc(degfree/2, LogLikf/2) 
 print('ProbExact = %.4g ' % ProbExact )
 ##[paramLSQ,chisqLSQ,fLSQ,EXITFLAG,OUTPUT,LAMBDA,j] = lsqnonlin('ProbitLogit',
 ##    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
@@ -92,7 +92,7 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
     else:
         disp('Nonparametric bootstrap')
         prob=pObs
-    Nsim=40;
+    Nsim = 400;
     par = np.empty((Nsim,2))
     chisqLL2 = np.empty(Nsim)
     for i in range(Nsim):    #MonteCarlo simulations to get standard errors of params
@@ -120,7 +120,7 @@ for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         ,meanChi=meanChi
         ,stdChi=std(chisqLL2, axis=0)
         ,SEchiPredicted=sqrt(2*degfree)  #predicted SE of chisquareg
-        ,pvalue_chisq=1-special.gammainc(meanChi/2,degfree/2) 
+        ,pvalue_chisq=1-special.gammainc(degfree/2, meanChi/2) 
         )
     print d[iExpectOrObserved]
     #ProbExact=Stats2Prob('chi',meanChi, degfree, 0)
