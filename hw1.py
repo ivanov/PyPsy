@@ -45,6 +45,12 @@ elif dataset==2:   #Data on p. 94 of Kingdom/Prins
         #PF=@PAL_Logistic;
         paramsValues, LL, exitflag, output=PAL_PFML_Fit(StimLevels, NumPos,
             Ntrials, paramInit, paramsFree, PF);
+elif dataset==3:   # p118 of Kingdom/Prins / 4.1
+    StimLevels=np.array([-2., -1, 0, 1, 2])   #see details on p. 69
+    NumPos=np.array([48., 53, 55, 100, 100])
+    Ntrials=np.ones(5)*100; #number trials
+    paramInit=np.array([-1, 1, .5, 0]); #JND, PSE, Lower Asymptote (latter is fixed for now)
+
 if param_Init is not None:
     paramInit = param_Init
 pObs=NumPos/Ntrials;  #probability correct
@@ -58,7 +64,7 @@ LogLik, p0=ProbitLogit(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, Pro
 if plot_opt in ('both','pf'):
     plt.subplot(1,1,1)
     plt.plot(StimLevels, pObs,'*r')
-    plt.plot(StimLevels,p0,'--b', label='initial conditions')
+    plt.plot(StimLevels,p0,'.--b', label='initial conditions')
     plt.title('Fit data');
     plt.xlabel('Stimulus Intensity');
     plt.ylabel('Probability Correct')
