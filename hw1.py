@@ -101,8 +101,8 @@ if 1==1:   #for Log Likelihood
         plt.text(.95,.05 ,  results% (LogLikf,(1./pfinal[1]),pfinal[0]) , **kw)
         plt.legend(loc='best')
         plt.show()
-    print 'JND = %.4g ' % (1./pfinal[1])  #this prints out the inverse of slope
-    print 'PSE = %.4g ' % (pfinal[0])   #this give offset
+    print 'p[0] = %.4g ' % (pfinal[0])   #this give offset
+    print 'p[1] = %.4g ' % (pfinal[1])  #this prints out the inverse of slope
 #    pass
 #else:   #For chi square (not yet implimented
 #    j=full(j);  #something about sparse matrices
