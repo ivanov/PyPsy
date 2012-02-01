@@ -21,6 +21,7 @@ elif dataset==3:
 allparams = np.empty( (xpts,ypts,2) )
 allprobs = np.empty( (xpts,ypts) )
 log_param_err = np.empty( (xpts,ypts) )
+ll = np.empty( (xpts,ypts) )
 
 %run -i hw1.py $dataset 0 neither $ProbitOrLogit 
 param_ref = pfinal
@@ -31,6 +32,7 @@ for nx,x in enumerate( xidxs):
         allparams[nx,ny] = pfinal 
         allprobs[nx,ny] = ProbExact
         log_param_err[nx,ny] = log( sum((pfinal-param_ref)**2))
+        ll[nx,ny] = LogLikf
 
 #plt.figure()
 #ext = xidxs[0],xidxs[-1], yidxs.min(),yidxs[-1]
