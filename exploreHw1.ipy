@@ -1,4 +1,4 @@
-dataset = 1
+dataset = 3
 
 xpts = 40
 ypts = 20
@@ -6,12 +6,17 @@ ypts = 20
 # TODO: These should just come from the max/min of datasets
 if dataset==1:
     ProbitOrLogit=4
-    xidxs = linspace( -0.15, 1.75, xpts, endpoint=True)
-    yidxs = linspace( -90, 100, ypts, endpoint=True)
-else:
+    xidxs = linspace( -0.2, 1.0, xpts, endpoint=True)
+    yidxs = linspace( -0.15, 0.1, ypts, endpoint=True)
+elif dataset==2:
     ProbitOrLogit=4
     xidxs = linspace( -2.0, 2.0, xpts)
     yidxs = linspace( 0.0, 4.0, ypts)
+elif dataset==3:
+    ProbitOrLogit=2
+    xidxs = linspace( -2.0, 2.0, xpts)
+    yidxs = linspace( -100, 100, ypts)
+
 
 allparams = np.empty( (xpts,ypts,2) )
 allprobs = np.empty( (xpts,ypts) )
