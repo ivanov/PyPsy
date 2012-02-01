@@ -43,6 +43,6 @@ for nx,x in enumerate( xidxs):
 
 contourf( xidxs, yidxs, log_param_err.T )
 colorbar()
-ylabel('p[0] (threshold)')
-xlabel('p[1] (slope or JND)')
+xlabel('p[0] (threshold)')
+ylabel('p[1] (slope or JND)')
 title('log(sse of optimized params)')
