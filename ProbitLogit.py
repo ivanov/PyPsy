@@ -14,7 +14,6 @@ def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
     if ProbitOrLogit>2:
         tparam[1]=1./tparam[1]; #param(2) is now like JND rather than slope (in stim units)
         ProbitOrLogit=ProbitOrLogit-2; #To allow it to be like before
-	print (param)
 
     z=(stim-tparam[0])*tparam[1];
 
