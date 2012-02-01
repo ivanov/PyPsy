@@ -14,6 +14,9 @@ dataset = 1 #1 for p. 69 data,  2 for p. 94 data
 numBootstraps = 10
 plot_opt = 'both'
 param_Init =  None
+ProbitOrLogit=4;
+#1 is probit, 2 is logit (probit means cumulative normal, prins slope) 
+#3 is probit, 4 is logit (param2 becomes like JND, since it is reciprocated)
 
 if len(sys.argv) > 1:
     dataset = int(sys.argv[1])
@@ -22,7 +25,9 @@ if len(sys.argv) > 2:
 if len(sys.argv) > 3:
     plot_opt = sys.argv[3]
 if len(sys.argv) > 4:
-    param_Init  = np.array([float(anarg) for anarg in sys.argv[4:]])
+    ProbitOrLogit = int(sys.argv[4])
+if len(sys.argv) > 5:
+    param_Init  = np.array([float(anarg) for anarg in sys.argv[5:]])
 
 if dataset==1:   # Data on p. 69 of Kingdom/Prins
     StimLevels=np.array([.01, .03, .05, .07, .09, .11])   #see details on p. 69
@@ -45,7 +50,7 @@ if param_Init is not None:
 pObs=NumPos/Ntrials;  #probability correct
 params0=paramInit[0:2];
 LowerAsymptote=paramInit[2];
-ProbitOrLogit=2;#1 is probit, 2 is logit  (probit means cumulative normal)
+
 print "running dataset #",dataset
 print '*'*30
 print 'from initial conditions'
@@ -67,10 +72,11 @@ def errfunc(*args):
 warn = 1
 #while warn != 0:
 out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
-    Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1);
+    Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, retall=True);
 pfinal = out[0]  # Y
 warn = out[4]; params0 = out[0]
 pfinal = out[0]  # Y
+searched_params = numpy.array( out[5] )
 
 LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 if plot_opt in ('both','pf'):
@@ -150,8 +156,6 @@ if numBootstraps>1:
             ,pvalue_chisq=1.-special.gammainc(degfree/2., meanChi/2.)
             )
         dprint(d[iExpectOrObserved])
-
-
 
 #end
 ### make contour plots
