@@ -1,0 +1,19 @@
+dataset=1
+ProbitOrLogit=4
+LowerAsymptote=0.5
+
+param_list = [ [0.2, 0.02], [0.15,0.08], [-0.1,0.04], [0.09,0.001], [0.1, -0.01] ]
+
+#figure()
+
+for param in param_list:
+    x = param[0]
+    y = param[1]
+    %run -i hw1.py $dataset 0 neither $ProbitOrLogit $x $y 0.5 0
+    plot( x, y, '*' )
+    plot( searched_params[:,0], searched_params[:,1], '.-', label="%.2g,%.2g"%(x,y))
+
+xlim( -0.1, 0.2)
+ylim( -0.02, 0.1)
+legend( loc='best' )
+
