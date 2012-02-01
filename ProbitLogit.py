@@ -8,12 +8,15 @@ def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
 #param(1) is the JND, param(2) is PSEs (in stim units)
 # NOTE: above comment is wrong. first param is PSE, second is JND. drc + pi
     upper_asymptote=1; 
-    z=(stim-param[0])*param[1];
+
+    tparam = param.copy()
 
     if ProbitOrLogit>2:
-        param[1]=1./param[1]; #param(2) is now like JND rather than slope (in stim units)
+        tparam[1]=1./tparam[1]; #param(2) is now like JND rather than slope (in stim units)
         ProbitOrLogit=ProbitOrLogit-2; #To allow it to be like before
-    print (param[0], param[1])
+	print (param)
+
+    z=(stim-tparam[0])*tparam[1];
 
     if ProbitOrLogit==1:
         probFull=.5*(scipy.special.erf(z/np.sqrt(2))+1);#psychometric function going from 0 to 1
