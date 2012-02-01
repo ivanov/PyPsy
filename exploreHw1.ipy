@@ -1,31 +1,48 @@
-griddims = 10
-dataset = 2
+dataset = 1
+
+xpts = 40
+ypts = 20
 
 # TODO: These should just come from the max/min of datasets
 if dataset==1:
-    xidxs = linspace( 0.0, 0.11, griddims)
-    yidxs = linspace( 0.0, 100.0, griddims)
+    ProbitOrLogit=4
+    xidxs = linspace( -0.15, 1.75, xpts, endpoint=True)
+    yidxs = linspace( -90, 100, ypts, endpoint=True)
 else:
-    xidxs = linspace( -2.0, 2.0, griddims)
-    yidxs = linspace( 0.0, 4.0, griddims)
+    ProbitOrLogit=4
+    xidxs = linspace( -2.0, 2.0, xpts)
+    yidxs = linspace( 0.0, 4.0, ypts)
 
-allparams = np.empty( (griddims,griddims,2) )
-allprobs = np.empty( (griddims,griddims) )
+allparams = np.empty( (xpts,ypts,2) )
+allprobs = np.empty( (xpts,ypts) )
+log_param_err = np.empty( (xpts,ypts) )
+
+%run -i hw1.py $dataset 0 neither $ProbitOrLogit 
+param_ref = pfinal
 
 for nx,x in enumerate( xidxs):
     for ny,y in enumerate( yidxs):
-        %run -i hw1.py $dataset 0 neither $x $y 0 0
+        %run -i hw1.py $dataset 0 neither $ProbitOrLogit $x $y 0.5 0
         allparams[nx,ny] = pfinal 
         allprobs[nx,ny] = ProbExact
-plt.figure()
-ext = xidxs[0],xidxs[-1], yidxs.min(),yidxs[-1]
-plt.matshow(allprobs)#, extent=ext)
-plt.colorbar()
+        log_param_err[nx,ny] = log( sum((pfinal-param_ref)**2))
 
-plt.figure()
-plt.imshow(allparams[...,0], extent=ext)
-plt.colorbar();
+#plt.figure()
+#ext = xidxs[0],xidxs[-1], yidxs.min(),yidxs[-1]
+#plt.matshow(allprobs)#, extent=ext)
+#plt.colorbar()
 
-plt.figure()
-plt.imshow(allparams[...,1], extent=ext)
-plt.colorbar();
+#plt.figure()
+#plt.imshow(allparams[...,0], extent=ext)
+#plt.colorbar();
+
+#plt.figure()
+#plt.imshow(allparams[...,1], extent=ext)
+#plt.colorbar();
+#
+
+contourf( xidxs, yidxs, log_param_err.T )
+colorbar()
+ylabel('p[0] (threshold)')
+xlabel('p[1] (slope or JND)')
+title('log(sse of optimized params)')
