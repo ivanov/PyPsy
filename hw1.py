@@ -8,7 +8,15 @@ import scipy.special as special
 
 from utils import dprint
 
-print '*'*30
+import logging
+logging.basicConfig()
+log = logging.getLogger(__file__)
+
+# change .INFO to .WARNING to supress output
+log.setLevel(logging.INFO)
+#log.setLevel(logging.DEBUG) # uncomment this get really verbose
+
+log.info('*'*30)
 
 dataset = 1 #1 for p. 69 data,  2 for p. 94 data
 numBootstraps = 10
@@ -57,9 +65,9 @@ pObs=NumPos/Ntrials;  #probability correct
 params0=paramInit[0:2];
 LowerAsymptote=paramInit[2];
 
-print "running dataset #",dataset
-print '*'*30
-print 'from initial conditions'
+log.info("running dataset #%i",dataset)
+log.info ('*'*30)
+log.info('from initial conditions')
 LogLik, p0=ProbitLogit(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 if plot_opt in ('both','pf'):
     plt.subplot(1,1,1)
@@ -78,7 +86,8 @@ def errfunc(*args):
 warn = 1
 #while warn != 0:
 out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
-    Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, retall=True);
+    Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, retall=True,
+    disp=0);
 pfinal = out[0]  # Y
 warn = out[4]; params0 = out[0]
 pfinal = out[0]  # Y
@@ -95,7 +104,7 @@ if plot_opt in ('both','pf'):
 Nlevels=len(probExpect);
 degfree=Nlevels-2.;    #predicted value of chisquare
 ProbExact=1-special.gammainc(degfree/2., LogLikf/2.)
-print 'ProbExact = %.4g ' % ProbExact 
+log.info('ProbExact = %.4g ' % ProbExact )
 ##[paramLSQ,chisqLSQ,fLSQ,EXITFLAG,OUTPUT,LAMBDA,j] = lsqnonlin('ProbitLogit',
 ##    params,[],[],[], StimLevels, NumPos, Ntrials,LowerAsymptote, ProbitOrLogit,2);
 if 1==1:   #for Log Likelihood
@@ -107,8 +116,8 @@ if 1==1:   #for Log Likelihood
         plt.text(.95,.05 ,  results% (LogLikf,(1./pfinal[1]),pfinal[0]) , **kw)
         plt.legend(loc='best')
         plt.show()
-    print 'p[0] = %.4g ' % (pfinal[0])   #this give offset
-    print 'p[1] = %.4g ' % (pfinal[1])  #this prints out the inverse of slope
+    log.info('p[0] = %.4g ' % (pfinal[0]) )  #this give offset
+    log.info('p[1] = %.4g ' % (pfinal[1]) ) #this prints out the inverse of slope
 #    pass
 #else:   #For chi square (not yet implimented
 #    j=full(j);  #something about sparse matrices
@@ -119,17 +128,17 @@ if 1==1:   #for Log Likelihood
 #    print ['JND = ' num2str(params(1),3) ' +- ' num2str(SE(1),2)]
 #    print ['PSE = ' num2str(params(2),3) ' +- ' num2str(SE(2),2)]
 #end
-print 'chi square = %.2g' %(LogLikf)
+log.info('chi square = %.2g' %(LogLikf))
 #
 if numBootstraps>1:
 ### Do parametric and nonparametric Monte Carlo simulations ('bootstraps')
     d = {}
     for iExpectOrObserved in [1,2]: #for parametric vs nonparametric
         if iExpectOrObserved==1:
-            print 'parametric bootstrap'
+            log.info('parametric bootstrap')
             prob=probExpect
         else:
-            print 'Nonparametric bootstrap'
+            log.info('Nonparametric bootstrap')
             prob=pObs
         Nsim = numBootstraps;
         par = np.empty((Nsim,2))
@@ -161,7 +170,8 @@ if numBootstraps>1:
             ,SEchiPredicted=np.sqrt(2.*degfree)  #predicted SE of chisquareg
             ,pvalue_chisq=1.-special.gammainc(degfree/2., meanChi/2.)
             )
-        dprint(d[iExpectOrObserved])
+        if log.getEffectiveLevel() <= logging.INFO:
+            dprint(d[iExpectOrObserved])
 
 #end
 ### make contour plots
