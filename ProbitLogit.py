@@ -70,7 +70,7 @@ def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
     else:
         raise ValueError("Only know ChisqOrLL==0,1,2, not %d"%ChisqOrLL)
 
-    return [LogLik, prob] 
+    return LogLik, prob
 #clg;hold off;
 #plot(stim,Obs./N,'x',sim,prob,'-')
 #xlabel('stimulus'); ylabel('prob correct')
