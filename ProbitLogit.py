@@ -2,12 +2,44 @@ import scipy.special # for erf
 import numpy as np
 
 def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
-#stim are the stimulus levels
-#Obs is the Observed data
-#N is the number of trials at each level
-#param(1) is the JND, param(2) is PSEs (in stim units)
-# NOTE: above comment is wrong. first param is PSE, second is JND. drc + pi
-    upper_asymptote=1; 
+    """
+    Given all of the parameters, return either (depending on the value of
+    ChisqOrLL) the log-likelihood or the chi-squared value along with the
+    probability for the data under the model
+
+    Parameters
+    ----------
+    param: array of length 2
+        param[0] is the PSE (in stim units), param[1] is the either the slope or
+        the JND, depending on the value of ProbitOrLogit
+    stim : array
+        The stimulus levels
+    Obs : array
+        The Observed data: number of correct responses at each level
+    N : int
+        The number of trials at each level
+    lower_asymptote : float
+        The 'minimum' used when rescaling (e.g.: 0.5 for binary outcomes)
+    ProbitOrLogit : int (1,2,3, or 4)
+        1 is probit, 2 is logit (probit means cumulative normal, prins slope)
+        3 is probit, 4 is logit (param[1] becomes like JND, since it is
+        reciprocated)
+    ChisqOrLL : int (1,2, or 0)
+        1 is Log-Likelihood, 2 is Chi-Squared value
+
+    Returns
+    -------
+    LogLik, prob : float,float 
+        The log-likelihood or the chi-squared value along with the
+        probability for the data under the model
+
+    Notes
+    -----
+    Original Matlab code *wrongly* stated that:
+         "param(1) is the JND, param(2) is PSEs (in stim units)"
+    We have corrected that here - drc + pi
+    """
+    upper_asymptote=1.0; 
 
     tparam = param.copy()
 
