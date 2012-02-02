@@ -48,11 +48,11 @@ elif dataset==2:   #Data on p. 94 of Kingdom/Prins
     NumPos= np.array([2., 3, 3, 3, 4])*1;
     Ntrials=np.array([4., 4, 4, 4,  4])*1;
     paramInit=np.array([0, 1, .5, 0]); #JND, PSE, Lower Asymptote (latter is fixed for now)
-    if 1==0:
-        paramsFree=np.array([1, 1, 0, 0]);
-        #PF=@PAL_Logistic;
-        paramsValues, LL, exitflag, output=PAL_PFML_Fit(StimLevels, NumPos,
-            Ntrials, paramInit, paramsFree, PF);
+    #if 1==0:
+    #    paramsFree=np.array([1, 1, 0, 0]);
+    #    #PF=@PAL_Logistic;
+    #    paramsValues, LL, exitflag, output=PAL_PFML_Fit(StimLevels, NumPos,
+    #        Ntrials, paramInit, paramsFree, PF);
 elif dataset==3:   # p118 of Kingdom/Prins / 4.1
     StimLevels=np.array([-2., -1, 0, 1, 2])   #see details on p. 69
     NumPos=np.array([48., 53, 55, 100, 100])
