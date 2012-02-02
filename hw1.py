@@ -82,7 +82,7 @@ out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
 pfinal = out[0]  # Y
 warn = out[4]; params0 = out[0]
 pfinal = out[0]  # Y
-searched_params = numpy.array( out[5] )
+searched_params = np.array( out[5] )
 
 LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 if plot_opt in ('both','pf'):
