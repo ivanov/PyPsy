@@ -16,6 +16,17 @@ log = logging.getLogger(__file__)
 log.setLevel(logging.INFO)
 #log.setLevel(logging.DEBUG) # uncomment this get really verbose
 
+try:
+    # define this variable and set it to True in your namespace
+    # before you do a `run -i hw1.py` or `run -i exploreHw1.ipy` to silence
+    # the logging output
+    _be_quiet
+except NameError:
+    pass
+else:
+    if _be_quiet == True:
+        log.setLevel(logging.WARNING)
+
 log.info('*'*30)
 
 dataset = 1 #1 for p. 69 data,  2 for p. 94 data
