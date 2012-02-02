@@ -6,16 +6,16 @@ ypts = 20
 # TODO: These should just come from the max/min of datasets
 if dataset==1:
     ProbitOrLogit=4
-    xidxs = linspace( -0.2, 1.0, xpts, endpoint=True)
-    yidxs = linspace( -0.15, 0.1, ypts, endpoint=True)
+    xidxs = np.linspace( -0.2, 1.0, xpts)
+    yidxs = np.linspace( -0.15, 0.1, ypts)
 elif dataset==2:
     ProbitOrLogit=4
-    xidxs = linspace( -2.0, 2.0, xpts)
-    yidxs = linspace( 0.0, 4.0, ypts)
+    xidxs = np.linspace( -2.0, 2.0, xpts)
+    yidxs = np.linspace( 0.0, 4.0, ypts)
 elif dataset==3:
     ProbitOrLogit=2
-    xidxs = linspace( -2.0, 2.0, xpts)
-    yidxs = linspace( -100, 100, ypts)
+    xidxs = np.linspace( -2.0, 2.0, xpts)
+    yidxs = np.linspace( -100, 100, ypts)
 
 
 allparams = np.empty( (xpts,ypts,2) )
@@ -31,7 +31,7 @@ for nx,x in enumerate( xidxs):
         %run -i hw1.py $dataset 0 neither $ProbitOrLogit $x $y 0.5 0
         allparams[nx,ny] = pfinal 
         allprobs[nx,ny] = ProbExact
-        log_param_err[nx,ny] = log( sum((pfinal-param_ref)**2))
+        log_param_err[nx,ny] = np.log( sum((pfinal-param_ref)**2))
         ll[nx,ny] = LogLikf
 
 #plt.figure()
@@ -48,8 +48,8 @@ for nx,x in enumerate( xidxs):
 #plt.colorbar();
 #
 
-contourf( xidxs, yidxs, log_param_err.T )
-colorbar()
-xlabel('p[0] (threshold)')
-ylabel('p[1] (slope or JND)')
-title('log(sse of optimized params)')
+plt.contourf( xidxs, yidxs, log_param_err.T )
+plt.colorbar()
+plt.xlabel('p[0] (threshold)')
+plt.ylabel('p[1] (slope or JND)')
+plt.title('log(sse of optimized params)')
