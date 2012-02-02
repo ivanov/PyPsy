@@ -1,3 +1,5 @@
+import numpy as np
+import matplotlib.pyplot as plt
 dataset = 3
 
 xpts = 40
@@ -53,3 +55,4 @@ plt.colorbar()
 plt.xlabel('p[0] (threshold)')
 plt.ylabel('p[1] (slope or JND)')
 plt.title('log(sse of optimized params)')
+plt.show()
