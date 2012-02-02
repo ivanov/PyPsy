@@ -11,6 +11,8 @@ def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
 
     tparam = param.copy()
 
+    if ProbitOrLogit<1 or ProbitOrLogit > 4:
+        raise ValueError("Don't know what to do when ProbitOrLogit = %i"%ProbitOrLogit)
     if ProbitOrLogit>2:
         tparam[1]=1./tparam[1]; #param(2) is now like JND rather than slope (in stim units)
         ProbitOrLogit=ProbitOrLogit-2; #To allow it to be like before
@@ -33,6 +35,8 @@ def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
         LogLik= sum((Obs-Expect)**2./Expect/(1.-prob))
     elif ChisqOrLL==0:
         LogLik=0;  #for plotting
+    else:
+        raise ValueError("Only know ChisqOrLL==0,1,2, not %d"%ChisqOrLL)
 
     return [LogLik, prob] 
 #clg;hold off;
