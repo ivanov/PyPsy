@@ -202,29 +202,37 @@ if numBootstraps>1:
 # plotting (e.g. take the optimal solution we get, and then explore a
 # parameter grid around that solution)
 if plot_opt in ('both','contour'):
-    xpts = 100
-    ypts = 100
-    if dataset==2 or dataset==3:
+    xpts = 200
+    ypts = 200
+    if dataset==1:
+        #TODOnot sure what the grid ranges should be for DS 1
         p1 = np.linspace( -0.2, 1.0, xpts, endpoint=True)
-        logp2=np.linspace( 0, 0.6, ypts, endpoint=True)
-        LL=np.empty(p1.shape+logp2.shape)
+        logp2=np.linspace( 0.1, 0.5, ypts, endpoint=True)
+    elif dataset==2:
+        p1 = np.linspace( -0.2, 1.0, xpts, endpoint=True)
+        logp2=np.linspace( 0.1, 0.5, ypts, endpoint=True)
+    elif dataset==3:
+        p1 = np.linspace( -0.1, 1.0, xpts, endpoint=True)
+        logp2=np.linspace( 0.0, 0.5, ypts, endpoint=True)
 
-        chimin = finfo(float).max
-        for i1 in arange(len(p1)):
-            for i2 in arange(len(logp2)):
-                param=np.array([p1[i1],logp2[i2]]);
-                [LogLik, p0]=ProbitLogit(param, StimLevels, NumPos,
-                    Ntrials, LowerAsymptote, ProbitOrLogit,1);
-                LL[i1,i2]=LogLik;
-                if isnan(LogLik)==False and LogLik<chimin:
-                    chimin = LogLik
-        plt.figure(2)
-        X=p1; # xxx: is this **0 supposed to be matrix exponentiation?
-        Y=logp2;
-        V=append( chimin,chimin+.125*2**np.arange(0,8.001)) # include chimin, then the others
-        plt.contourf(X,Y,LL.T, V);
-        #plt.contourf(X,Y,LL.T);
-        plt.colorbar()
-        plt.xlabel('75% correct (a)')
-        plt.ylabel('slope (b)')
-        plt.show()
+    LL=np.empty(p1.shape+logp2.shape)
+
+    chimin = finfo(float).max
+    for i1 in arange(len(p1)):
+        for i2 in arange(len(logp2)):
+            param=np.array([p1[i1],logp2[i2]]);
+            [LogLik, p0]=ProbitLogit(param, StimLevels, NumPos,
+                Ntrials, LowerAsymptote, ProbitOrLogit,1);
+            LL[i1,i2]=LogLik;
+            if isnan(LogLik)==False and LogLik<chimin:
+                chimin = LogLik
+    plt.figure(2)
+    X=p1; # xxx: is this **0 supposed to be matrix exponentiation?
+    Y=logp2;
+    V=append( chimin,chimin+.125*2**np.arange(0,8.001)) # include chimin, then the others
+    plt.contourf(X,Y,LL.T, V);
+    #plt.contourf(X,Y,LL.T);
+    plt.colorbar(format='%.4g')
+    plt.xlabel('75% correct (a)')
+    plt.ylabel('slope (b)')
+    plt.show()
