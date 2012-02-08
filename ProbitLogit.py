@@ -74,3 +74,20 @@ def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
 #clg;hold off;
 #plot(stim,Obs./N,'x',sim,prob,'-')
 #xlabel('stimulus'); ylabel('prob correct')
+
+def errfunc(*args):
+    return ProbitLogit(*args)[0]
+
+def fitpf(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit):
+    warn = 1
+    #while warn != 0:
+    out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
+        Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, retall=True,
+        disp=0);
+    pout = out[0]  # Y
+    warn = out[4]; params0 = out[0]
+    pfinal = out[0]  # Y
+    searched_params = np.array( out[5] )
+
+    return pout, searched_params
+
