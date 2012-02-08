@@ -165,6 +165,10 @@ if numBootstraps>1:
         Nsim = numBootstraps;
         par = np.empty((Nsim,2))
         chisqLL2 = np.empty(Nsim)
+        # XXX: we should look into using scipy.stats or even pymc to speed up
+        # and leverage code others have written to do this for us
+        # also - for our fitting routing - we can use something like:
+        # scipy.stats.logistic.fit()
         for i in range(Nsim):    #MonteCarlo simulations to get standard errors of params
             N=Ntrials[0];
             NumPos=np.sum(np.random.rand(N,Nlevels)<np.ones((N,1))*prob, axis=0);#only for constant Ntrials
