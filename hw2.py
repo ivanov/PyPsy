@@ -1,6 +1,10 @@
 import numpy as np
 import scipy.special as special
 
+def ztop(z):
+    p = 0.5 + 0.5*special.erf(z/np.sqrt(2))
+    return p
+
 def ptoz(p):
     z = np.sqrt(2)*special.erfinv(p*2-1);
     return z
@@ -21,6 +25,13 @@ def afc2_p_to_dprime(ph, pf=None):
     pC=(ph+(1.0-pf))/2
 
     return dP, C, lnB, pC
+
+def afc2_dprime_to_p(dp, c):
+    zH = (dp-c)/np.sqrt(2)
+    zF = -(dp+c)/np.sqrt(2)
+    ph = ztop( zH)
+    pf = ztop( zF)
+    return ph,pf
 
 # p163
 demo_prins_h = numpy.array( [0.6, 0.7, 0.8] )
