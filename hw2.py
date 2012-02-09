@@ -7,6 +7,7 @@ def ztop(z):
     return p
 
 def ptoz(p):
+    p = np.asanyarray(p)
     z = np.sqrt(2)*special.erfinv(p*2-1);
     return z
 
@@ -63,26 +64,47 @@ unb = afc2_dprime_to_p( hw2res[0], zeros(6) )
 stanh = numpy.array( [0.95] )
 stanf = numpy.array( [0.50] )
 
-figure();
-plot( prins_tab62_f, prins_tab62_h, 'o', label='data' )
-plot( unb[1], unb[0], '*', label='"unbiased" data' )
-plot( [0,1], [0,1], '--' )
-xlim( 0,1 )
-ylim( 0,1 )
-ylabel( 'Hit rate')
-xlabel( 'False alarm rate')
-title('HW2/Problem 6.2: Biased 2AFC')
+f1,ax = plt.subplots();
+ax.plot( prins_tab62_f, prins_tab62_h, 'o', label='data' )
+ax.plot( unb[1], unb[0], '*', label='"unbiased" data' )
+ax.plot( [0,1], [0,1], '--' )
+ax.set_xlim( 0,1 )
+ax.set_ylim( 0,1 )
+ax.set_ylabel( 'Hit rate')
+ax.set_xlabel( 'False alarm rate')
+ax.set_title('HW2/Problem 6.2: Biased 2AFC')
 
+f2,axZ = plt.subplots();
+axZ.plot( ptoz( prins_tab62_f), ptoz(prins_tab62_h), 'o', label='data' )
+axZ.plot( ptoz(unb[1]), ptoz(unb[0]), '*', label='"unbiased" data' )
+some_eps = 0.001
+axZ.plot( ptoz([some_eps,1-some_eps]), ptoz([some_eps,1-some_eps]), '--' )
+#xlim( 0,1 )
+#ylim( 0,1 )
+axZ.set_ylabel( r'$Z_{HIT}$')
+axZ.set_xlabel( r'$Z_{FA}$')
+axZ.grid()
+ax.set_title('HW2/Problem 6.2: Biased 2AFC')
 # Label the d' of each point
 for n in arange( len( prins_tab62_h) ):
-    text( prins_tab62_f[n], prins_tab62_h[n], "d'=%.3f" % hw2res[0][n], size=9 )
+    ax.text( prins_tab62_f[n], prins_tab62_h[n], " d'=%.3f" % hw2res[0][n], size=9 )
+    axZ.text( ptoz(prins_tab62_f[n]), ptoz(prins_tab62_h[n]), " d'=%.3f" % hw2res[0][n], size=9 )
 
 for dprime in [0.5,1,2]:
     curv=afc2_dprime_to_p( dprime, np.linspace(-10,10,100) )
-    plot( curv[1], curv[0], label="d'=%.1f" % dprime )
+    ax.plot( curv[1], curv[0], label="d'=%.1f" % dprime )
+    # can't convert numbers close to 0 and 1 to z score, since after
+    # converstion they are -infty and +infty, respectively
+    axZ.plot( ptoz(curv[1][2:-2]), ptoz(curv[0][2:-2]), label="d'=%.1f" % dprime )
 
-legend(loc='best')
+ax.legend(loc='best')
+axZ.legend(loc='best')
+
+axZ.set_xlim(-3,3)
+axZ.set_ylim(-3,3)
+
 show()
+
 
 figure()
 StimLevels=arange(6)
