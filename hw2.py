@@ -1,6 +1,9 @@
 import numpy as np
+import numpy
 import scipy.special as special
 import pf as pf
+import matplotlib.pyplot as plt
+#from matplotlib.pylab import *
 
 def ztop(z):
     p = 0.5 + 0.5*special.erf(z/np.sqrt(2))
@@ -33,6 +36,13 @@ def afc2_dprime_to_p(dp, c):
     pf = ztop( zF)
     return ph,pf
 
+def afc1_dprime_to_p(dp, c):
+    zH = (dp-c)
+    zF = -(dp+c)
+    ph = ztop( zH)
+    pf = ztop( zF)
+    return ph,pf
+
 def dprime_to_p(dp, c):
     zH = -c+dp
     zF = -c
@@ -58,7 +68,7 @@ demores = afc2_p_to_dprime( demo_prins_h, demo_prins_f )
 prins_tab62_h = numpy.array([0.61,0.69,0.79,0.88,0.97,0.99]) 
 prins_tab62_f = numpy.array([0.53,0.42,0.33,0.18,0.06,0.03]) 
 hw2res= afc2_p_to_dprime( prins_tab62_h, prins_tab62_f )
-unb = afc2_dprime_to_p( hw2res[0], zeros(6) )
+unb = afc2_dprime_to_p( hw2res[0], np.zeros(6) )
 
 # Stan paper: p1425
 stanh = numpy.array( [0.95] )
@@ -86,16 +96,22 @@ axZ.set_xlabel( r'$Z_{FA}$')
 axZ.grid()
 ax.set_title('HW2/Problem 6.2: Biased 2AFC')
 # Label the d' of each point
-for n in arange( len( prins_tab62_h) ):
+for n in np.arange( len( prins_tab62_h) ):
     ax.text( prins_tab62_f[n], prins_tab62_h[n], " d'=%.3f" % hw2res[0][n], size=9 )
     axZ.text( ptoz(prins_tab62_f[n]), ptoz(prins_tab62_h[n]), " d'=%.3f" % hw2res[0][n], size=9 )
 
 for dprime in [0.5,1,2]:
-    curv=afc2_dprime_to_p( dprime, np.linspace(-10,10,100) )
-    ax.plot( curv[1], curv[0], label="d'=%.1f" % dprime )
+    curv1=afc1_dprime_to_p( dprime, np.linspace(-10,10,100) )
+    curv2=afc2_dprime_to_p( dprime, np.linspace(-10,10,100) )
+    ax.plot( curv2[1], curv2[0], label="d'=%.1f" % dprime )
     # can't convert numbers close to 0 and 1 to z score, since after
     # converstion they are -infty and +infty, respectively
-    axZ.plot( ptoz(curv[1][2:-2]), ptoz(curv[0][2:-2]), label="d'=%.1f" % dprime )
+    axZ.plot( ptoz(curv2[1][2:-2]), ptoz(curv2[0][2:-2]), label="d'=%.1f" % dprime )
+    ax.plot( curv1[1], curv1[0], label="$d'_{1AFC}=%.1f$" % dprime ,
+            linestyle='--')
+    cut = 40
+    axZ.plot( ptoz(curv1[1][cut:-cut]), ptoz(curv1[0][cut:-cut]),
+            label="$d'_{1AFC}=%.1f$" % dprime, linestyle='--' )
 
 ax.legend(loc='best')
 axZ.legend(loc='best')
@@ -103,19 +119,19 @@ axZ.legend(loc='best')
 axZ.set_xlim(-3,3)
 axZ.set_ylim(-3,3)
 
-show()
+plt.show()
 
 
-figure()
-StimLevels=arange(6)
-Ntrials=ones(6)
+plt.figure()
+StimLevels=np.arange(6)
+Ntrials=np.ones(6)
 ProbitOrLogit=2
 LowerAsymptote=0.5
 
 plt.plot(StimLevels,hw2res[3],'b*', label='$Pc$')
 plt.plot(StimLevels,unb[0],'rx', label='$Pc_{max}$')
 
-smoothrang = linspace(StimLevels[0], StimLevels[-1], 100 )
+smoothrang = np.linspace(StimLevels[0], StimLevels[-1], 100 )
 
 # Fit to Pc
 # 2 = normal slope (Palamedes way)
@@ -137,10 +153,10 @@ plt.show()
 
 #fake_dprime = fake_dprime( prins_tab62_h, prins_tab62_f )
 
-crange = linspace( -2, 2, 100. )
+crange = np.linspace( -2, 2, 100. )
 
-hrange = linspace( 0.01, 0.99, 200.)
-frange = linspace( 0.01, 0.99, 200.)
+hrange = np.linspace( 0.01, 0.99, 200.)
+frange = np.linspace( 0.01, 0.99, 200.)
 
 print "building dprime grid"
 fake_dprime_grid = numpy.array([ [fake_dprime(h,f) for f in frange] for h in hrange])
@@ -148,7 +164,7 @@ fake_dprime_grid = numpy.array([ [fake_dprime(h,f) for f in frange] for h in hra
 
 dprime_grid = numpy.array([ [(ptoz(h)+ptoz(1-f)) for f in frange] for h in hrange]) / np.sqrt(2)
 
-v = linspace( -3, 3, 50 )
+v = np.linspace( -3, 3, 50 )
 v  = 50
 plt.figure();
 plt.contourf(hrange, frange, dprime_grid, v ); colorbar()
@@ -162,7 +178,7 @@ title('naive unbiased 2AFC dprime')
 
 plt.figure();
 plt.contourf(hrange, frange, dprime_grid/fake_dprime_grid, 50 ); colorbar()
-plot( prins_tab62_f, prins_tab62_h, 'x', label='table 6.2 data' )
+plt.plot( prins_tab62_f, prins_tab62_h, 'x', label='table 6.2 data' )
 plot( [0.5], [0.95], '*', label='Klein, from Green/Sweets p410' )
 
 plt.show()
