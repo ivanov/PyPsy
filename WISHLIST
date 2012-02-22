@@ -1,0 +1,17 @@
+WISHLIST
+========
+
+* nosetests
+* better function abstraction
+* wrapper objects
+     seed saving
+     smart plotting
+     persistence
+     sweep initial paramter and get back histogram
+     randomize gnerated data and get back histogram / error bars
+* proper package
+* CUDA capability 
+     (PyMC?)
+* psignifit - how it works and test comparison
+* palamedes - results in test suite
+* modularize graphics library
