@@ -1,12 +1,12 @@
 # for fitting a probit to data with an arbitrary lower asymptote
 import numpy as np
 import matplotlib.pyplot as plt
-from ProbitLogit import ProbitLogit
+from pypsy.pf import ProbitLogit
 import scipy.optimize as optimize
 import sys
 import scipy.special as special
 
-from utils import dprint
+from pypsy.utils import dprint
 
 import logging
 logging.basicConfig()
@@ -85,7 +85,7 @@ if plot_opt in ('both','pf'):
     plt.subplot(1,1,1)
     plt.plot(StimLevels, pObs,'*r')
     # Plot a smoother fitted function
-    smoothrang = linspace(StimLevels[0], StimLevels[-1], 100 )
+    smoothrang = np.linspace(StimLevels[0], StimLevels[-1], 100 )
     LogLikX, smoothprob=ProbitLogit(params0, smoothrang, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,0)
     plt.plot(smoothrang, smoothprob, '--b', label='init conds');
     #plt.plot(StimLevels,p0,'.--b', label='initial conditions')
@@ -112,7 +112,7 @@ searched_params = np.array( out[5] )
 LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 if plot_opt in ('both','pf'):
     # Plot a smoother fitted function
-    smoothrang = linspace(StimLevels[0], StimLevels[-1], 100 )
+    smoothrang = np.linspace(StimLevels[0], StimLevels[-1], 100 )
     LogLikX, smoothprob=ProbitLogit(pfinal, smoothrang, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,0)
     plt.plot(smoothrang, smoothprob, '-b', label='LL search');
 
@@ -209,7 +209,7 @@ if plot_opt in ('both','contour'):
     xpts = 200
     ypts = 200
     if dataset==1:
-        #TODOnot sure what the grid ranges should be for DS 1
+        #TODO not sure what the grid ranges should be for DS 1
         p1 = np.linspace( -0.2, 1.0, xpts, endpoint=True)
         logp2=np.linspace( 0.1, 0.5, ypts, endpoint=True)
     elif dataset==2:
@@ -221,19 +221,19 @@ if plot_opt in ('both','contour'):
 
     LL=np.empty(p1.shape+logp2.shape)
 
-    chimin = finfo(float).max
-    for i1 in arange(len(p1)):
-        for i2 in arange(len(logp2)):
+    chimin = np.finfo(float).max
+    for i1 in np.arange(len(p1)):
+        for i2 in np.arange(len(logp2)):
             param=np.array([p1[i1],logp2[i2]]);
             [LogLik, p0]=ProbitLogit(param, StimLevels, NumPos,
                 Ntrials, LowerAsymptote, ProbitOrLogit,1);
             LL[i1,i2]=LogLik;
-            if isnan(LogLik)==False and LogLik<chimin:
+            if np.isnan(LogLik)==False and LogLik<chimin:
                 chimin = LogLik
     plt.figure(2)
     X=p1; # xxx: is this **0 supposed to be matrix exponentiation?
     Y=logp2;
-    V=append( chimin,chimin+.125*2**np.arange(0,8.001)) # include chimin, then the others
+    V=np.append( chimin,chimin+.125*2**np.arange(0,8.001)) # include chimin, then the others
     plt.contourf(X,Y,LL.T, V);
     #plt.contourf(X,Y,LL.T);
     plt.colorbar(format='%.4g')
