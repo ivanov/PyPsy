@@ -96,4 +96,4 @@ PACKAGES = ['pypsy',
             'pypsy.tests',
             ]
 PACKAGE_DATA = {"pypsy": ["LICENSE","tests/*.txt", "tests/*.npy"]}
-REQUIRES = ["numpy", "matplotlib"]
+REQUIRES = ["numpy", "matplotlib", "scipy"]
