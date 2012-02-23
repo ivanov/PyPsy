@@ -1,7 +1,14 @@
 WISHLIST
 ========
+* - TODO
+x - done!
 
-* nosetests
+x nosetests
+    * TODO: fix the following:
+     `nosetests pypsy --with-doctest` - should always work, but currently, for
+     some reason, `python -c 'import pypsy; pypsy.test()'` does not run the
+     doctests
+
 * better function abstraction
 * wrapper objects
      seed saving
@@ -9,7 +16,7 @@ WISHLIST
      persistence
      sweep initial paramter and get back histogram
      randomize gnerated data and get back histogram / error bars
-* proper package
+x proper package
 * CUDA capability 
      (PyMC?)
 * psignifit - how it works and test comparison
