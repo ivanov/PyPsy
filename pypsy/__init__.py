@@ -7,3 +7,7 @@ __docformat__ = 'restructuredtext'
 from version import  __version__
 
 from testlib import test
+
+import pf
+
+import utils

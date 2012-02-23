@@ -1,3 +1,10 @@
+"""Psychometric function related code
+
+Currently, only Probit and Logit are implemented, but the `fitpf` is generic
+enough to take anything you might pass it as errfunc. If that doesn't work,
+it's considered a bug, so please file it as such.
+"""
+
 import numpy as np
 import scipy.special # for erf
 import scipy.optimize as optimize
@@ -74,6 +81,7 @@ def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
     return LogLik, prob
 
 def errfunc(*args):
+    "simple wrapper of ProbitLogit for use with fmin"
     return ProbitLogit(*args)[0]
 
 def fitpf(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,
