@@ -1,8 +1,7 @@
 # for fitting a probit to data with an arbitrary lower asymptote
 import numpy as np
 import matplotlib.pyplot as plt
-from pypsy.pf import ProbitLogit
-import scipy.optimize as optimize
+from pypsy.pf import ProbitLogit, fitpf
 import sys
 import scipy.special as special
 
@@ -96,18 +95,11 @@ if plot_opt in ('both','pf'):
 ## now do the search
 #[params,chisqLL]=fminsearch('ProbitLogit',params0,[], StimLevels, NumPos, Ntrials,
 #    LowerAsymptote, ProbitOrLogit,1)
-def errfunc(*args):
-    return ProbitLogit(*args)[0]
 
-warn = 1
-#while warn != 0:
-out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
-    Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, retall=True,
-    disp=0);
-pfinal = out[0]  # Y
-warn = out[4]; params0 = out[0]
-pfinal = out[0]  # Y
-searched_params = np.array( out[5] )
+out = fitpf(params0, StimLevels, NumPos, Ntrials, LowerAsymptote,
+        ProbitOrLogit)
+pfinal = out  # Y
+params0 = out
 
 LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 if plot_opt in ('both','pf'):
@@ -175,8 +167,8 @@ if numBootstraps>1:
             #options = optimset('Display','off');
             #[par[i,:],chisqLL2(i)]=fminsearch('ProbitLogit',params,[], StimLevels,
             #    NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1);
-            out = optimize.fmin(errfunc, pfinal, args=(StimLevels, NumPos,
-                Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, disp=0);
+            out = fitpf(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote,
+                    ProbitOrLogit)
             sys.stdout.write('.')
             par[i,:]= out[0]
             chisqLL2[i] = out[1]

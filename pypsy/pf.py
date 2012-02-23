@@ -72,16 +72,19 @@ def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
         raise ValueError("Only know ChisqOrLL==0,1,2, not %d"%ChisqOrLL)
 
     return LogLik, prob
-#clg;hold off;
-#plot(stim,Obs./N,'x',sim,prob,'-')
-#xlabel('stimulus'); ylabel('prob correct')
 
-#[params,chisqLL]=fminsearch('ProbitLogit',params0,[], StimLevels, NumPos, Ntrials,
-#    LowerAsymptote, ProbitOrLogit,1)
 def errfunc(*args):
     return ProbitLogit(*args)[0]
 
-def fitpf(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit, output_param_search=False):
+def fitpf(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,
+        output_param_search=False, errfunc=errfunc):
+    """Fit a psychometric function.
+
+    The default function to minimize is ProbitLogit.
+
+    XXX: make this more generic to fit other functions, so we don't have to
+    pass inelegant "ProbitOrLogit"-type of parameters
+    """
     warn = 1
     #while warn != 0:
     out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
