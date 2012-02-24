@@ -25,7 +25,7 @@ CLASSIFIERS = ["Development Status :: 2 - Pre-Alpha",
                "Programming Language :: Python",
                "Topic :: Scientific/Engineering"]
 
-description = "pypsy: eyetracking data analysis"
+description = "pypsy: psychometric function fitting in Python"
 
 # Note: this long_description is actually a copy/paste from the top-level
 # README.txt, so that it shows up nicely on PyPI.  So please remember to edit
