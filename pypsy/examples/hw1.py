@@ -97,9 +97,10 @@ if plot_opt in ('both','pf'):
 #    LowerAsymptote, ProbitOrLogit,1)
 
 out = fitpf(params0, StimLevels, NumPos, Ntrials, LowerAsymptote,
-        ProbitOrLogit)
-pfinal = out  # Y
-params0 = out
+        ProbitOrLogit, output_param_search=True)
+pfinal = out[0]  # Y
+params0 = out[0]
+searched_params = np.array( out[1] )
 
 LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 if plot_opt in ('both','pf'):
