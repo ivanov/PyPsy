@@ -8,6 +8,7 @@ it's considered a bug, so please file it as such.
 import numpy as np
 import scipy.special # for erf
 import scipy.optimize as optimize
+import scipy.misc as misc
 
 def ProbitLogit(param,stim, Obs, N,  lower_asymptote, ProbitOrLogit, ChisqOrLL):
     """
@@ -108,3 +109,87 @@ def fitpf(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,
     else:
         return pout
 
+class experiment():
+    def __init__( self, levels, Ntrials, Ncorr ):
+        self.levels = levels
+        self.Ntrials = Ntrials
+        self.Ncorr = Ncorr
+
+def fn_probit(x):
+    return .5*(scipy.special.erf(x/np.sqrt(2.))+1.);
+def fn_logit(x):
+    return 1./(1.+np.exp(-x));
+
+def errfunc_OO(*args):
+    "simple wrapper for PF class fitting using fmin"
+    "0: (params that fmin is exploring...)"
+    "1: self"
+    "2: data"
+    "3: which stat to use (1=LL, 2=X2, 3=L_TrautweinStrasburger)"
+    obj=args[1]
+
+    # TODO: Make this smarter, instead of just shoving the two free parameters arbitrarily
+    obj.params[0] = args[0][0]
+    obj.params[1] = args[0][1]
+
+    return obj.eval_gof(args[2])[args[3]]
+
+class pf_generic():
+    # TODO: make params a dict ?
+    PARAM_PSE=0
+    PARAM_SPREAD=1
+    PARAM_LOWER=2
+    PARAM_UPPER=3
+    PARAM_INVERT_SLOPE=4
+    def __init__(self, fn, params):
+        self.fn = fn
+        self.params = params
+
+    # TODO: memoize results of next two functions?
+    def eval( self, x):
+        if (len(self.params)<5) or (self.params[self.PARAM_INVERT_SLOPE]==True):
+            # default if not specified 
+            spread = 1.0/self.params[self.PARAM_SPREAD]
+        else:
+            spread = self.params[self.PARAM_SPREAD]
+
+        pse = self.params[self.PARAM_PSE]
+        # rescale ordinate
+        eval_x=(x-pse)*spread
+        probs = self.fn( eval_x )
+        self.probs = self.params[self.PARAM_LOWER] + (self.params[self.PARAM_UPPER]-self.params[self.PARAM_LOWER])*probs;
+        return self.probs
+
+    def eval_gof( self, data):
+        probs = self.eval(data.levels)
+        expected = probs * data.Ntrials
+        # Compute various goodness of fit statistics
+        LL = -2*sum((data.Ncorr*np.log(expected/(data.Ncorr+np.finfo(float).eps))
+            +(data.Ntrials-data.Ncorr)*np.log((data.Ntrials-expected)/(data.Ntrials-data.Ncorr+np.finfo(float).eps))));
+        X2 = sum((data.Ncorr-expected)**2./expected/(1.-probs))
+
+        # Treutwein/Strasburger 1999 Eq 6 (likelihood of the data)
+        L_ts = 2**(sum( data.Ntrials ))
+        #L_ts = 1.0
+        for level in np.arange( len(data.levels) ):
+            # TODO: is right to use observed data or function values?: next two lines can chg to try fitted
+            thisN = data.Ntrials[level]
+            thisCorr = data.Ncorr[level]
+            L_ts *= misc.comb( thisN, thisCorr ) * (probs[level]**thisCorr) * (1.0 - probs[level])**(thisN-thisCorr) 
+        return probs,LL,X2,L_ts
+
+    def fitpf(self, params0, data, output_param_search=False, errfunc=errfunc_OO, which_stat_to_min=1):
+        """Fit a psychometric function.
+        """
+        warn = 1
+        #while warn != 0:
+        out = optimize.fmin(errfunc_OO, params0, args=(self,data,which_stat_to_min), full_output=1, retall=True, disp=0);
+        pout = out[0]  # Y
+        warn = out[4]; params0 = out[0]
+        pfinal = out[0]  # Y
+        searched_params = np.array( out[5] )
+    
+        if output_param_search:
+            return pout, searched_params
+        else:
+            return pout

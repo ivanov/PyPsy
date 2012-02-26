@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from pypsy.pf import ProbitLogit, fitpf
+import pypsy.pf as pf
 import sys
 import scipy.special as special
 
@@ -29,7 +30,7 @@ else:
 log.info('*'*30)
 
 dataset = 1 #1 for p. 69 data,  2 for p. 94 data
-numBootstraps = 10
+numBootstraps = 0
 plot_opt = 'both'
 param_Init =  None
 ProbitOrLogit=4;
@@ -233,3 +234,21 @@ if plot_opt in ('both','contour'):
     plt.xlabel('75% correct (a)')
     plt.ylabel('slope (b)')
     plt.show()
+
+
+log.info ("*"*30)
+log.info ("Comparing to new OO method" )
+
+# This line is redundant with stuff above, but want to make sure dealing with known values:
+LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
+LogLikX2, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,2)
+
+testpf =  pf.pf_generic( pf.fn_logit, [params0[0], params0[1], 0.5, 1., True] )
+testdata = pf.experiment( StimLevels, Ntrials, NumPos )
+gof = testpf.eval_gof( testdata )
+log.info( str(gof) )
+log.info( "probs same? %s" % str( np.all( gof[0]==probExpect) ) )
+log.info( "LL same? %s" % str(gof[1]==LogLikf) )
+log.info( "X2 same? %s" % str(gof[2]==LogLikX2) )
+testpf.fitpf( params0+np.random.rand(2)/10.0, testdata )
+log.info( "fitted params: %s " % str(testpf.params ) )
