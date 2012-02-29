@@ -28,6 +28,8 @@ else:
 #fw2 = [4.7231,7.0918,7.9939,9.7128,10.6386,13.2050]
 #s2 levels should ~= this, which is copied from Prins' MATLAB code
 
+nsims = 30
+doPlots = False
 gridGrain = 150
 numtrials = 120
 numlevels = 6
@@ -91,24 +93,33 @@ NumPos = np.array([11,12,15,17,17,19]) # to confirm is working--enter simulation
 data = pf.experiment( levels, trials_arr, NumPos )
 smoothrang = np.linspace( levels[0], levels[-1], 30 )
 
-plt.ion()
-plt.figure()
-lplot=plt.subplot(1,2,1)
-rplot=plt.subplot(1,2,2)
-for asim in np.arange(30):
+if doPlots:
+    plt.ion()
+    plt.figure()
+    lplot=plt.subplot(1,2,1)
+    rplot=plt.subplot(1,2,2)
+
+fit_params = np.zeros( (nsims,len(params)) )
+fit_LLs = np.zeros( nsims )
+for asim in np.arange(nsims):
+    if (asim%10)==0:
+        log.info( '%d/%d' % (asim,nsims))
     NumPos = data.simulate()
     LLspace = np.inner(logpcorr,NumPos) + np.inner(logpincorr, trials_arr-NumPos)
     maxidx = np.unravel_index( LLspace.argmax(), param_dims)
-    p0 = [ alphas[maxidx[0]], betas[maxidx[1]], 0.5, lambdas[maxidx[2]] ]
+    p0 = [ alphas[maxidx[0]], betas[maxidx[1]], lambdas[maxidx[2]] ]
     fit1.fitpf( p0, data )
+    fit_params[asim] = fit1.params
     gof = fit1.eval_gof( data )
+    fit_LLs[asim] = fit1.prinsNLL
     log.info( str(gof) )
     log.info( "fitted params: %s " % str(fit1.params ) )
-    lplot.clear()
-    lplot.contour( alphas, betas, np.max(LLspace,2))
-    rplot.clear()
-    rplot.plot( levels, NumPos, 'o' )
-    rplot.plot( smoothrang, trials_per*fit1.eval( smoothrang), 'k-',lw=3 )
-    plt.ylim( 5,22)
-    plt.show()
-    plt.draw()
+    if doPlots:
+        lplot.clear()
+        lplot.contour( alphas, betas, np.max(LLspace,2))
+        rplot.clear()
+        rplot.plot( levels, NumPos, 'o' )
+        rplot.plot( smoothrang, trials_per*fit1.eval( smoothrang), 'k-',lw=3 )
+        plt.ylim( 5,22)
+        plt.show()
+        plt.draw()

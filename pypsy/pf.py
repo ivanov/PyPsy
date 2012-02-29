@@ -98,7 +98,7 @@ def fitpf(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,
     #while warn != 0:
     out = optimize.fmin(errfunc, params0, args=(StimLevels, NumPos,
         Ntrials, LowerAsymptote, ProbitOrLogit, 1),full_output=1, retall=True,
-        disp=0);
+        disp=0, xtol=1e-6, ftol=1e-6,maxiter=400*len(params0),maxfun=400*len(params0));
     pout = out[0]  # Y
     warn = out[4]; params0 = out[0]
     pfinal = out[0]  # Y
@@ -226,13 +226,21 @@ class pf_generic():
             thisCorr = data.Ncorr[level]
             L_ts *= misc.comb( thisN, thisCorr ) * (probs[level]**thisCorr) * (1.0 - probs[level])**(thisN-thisCorr) 
             LL_ts += np.log(misc.comb( thisN, thisCorr )) + thisCorr*np.log(probs[level]) +np.log(1.0 - probs[level])*(thisN-thisCorr) 
+
+        #TODO: This is how Prins' clamps the lapse.  Parameterize.
+        if (self.params[self.PARAM_UPPER] < 0) or (self.params[self.PARAM_UPPER] > 0.05):
+            self.prinsNLL=np.inf
+
         return probs,LL,X2,L_ts,LL_ts,self.prinsNLL
 
-    def fitpf(self, params0, data, output_param_search=False, errfunc=errfunc_OO, which_stat_to_min=1):
+    def fitpf(self, params0, data, output_param_search=False, errfunc=errfunc_OO, which_stat_to_min=5):
         """Fit a psychometric function.
         """
         warn = 1
         #while warn != 0:
+        if params0[2]==0.0:
+            params0[2]=0.00025 # like in PAL_minimize
+        print params0
         out = optimize.fmin(errfunc_OO, params0, args=(self,data,which_stat_to_min), full_output=1, retall=True, disp=0);
         pout = out[0]  # Y
         warn = out[4]; params0 = out[0]
