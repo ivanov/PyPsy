@@ -45,7 +45,7 @@ gamma = 0.5
 lambdas = np.arange( 0, .06+np.finfo(float).eps, 0.005)
 
 # Model:
-fit1 =  pf.pf_generic( pf.fn_weibull, params, [0,1])
+fit1 =  pf.pf_generic( pf.fn_weibull, params, [0,1,3])
 
 # Data:
 levels = pf.fn_weibull_inv( levels_frac, params2  )
@@ -86,7 +86,8 @@ except NameError:
     toc=time.time()
 
 # NumPos = PAL_PF_SimulateObserver, etc...
-NumPos = np.array([14,12,13,16,18,20]) # to confirm is working--enter simulation vals from Prins
+NumPos = np.array([11,12,13,16,18,20]) # to confirm is working--enter simulation vals from Prins
+NumPos = np.array([11,12,15,17,17,19]) # to confirm is working--enter simulation vals from Prins
 data = pf.experiment( levels, trials_arr, NumPos )
 smoothrang = np.linspace( levels[0], levels[-1], 30 )
 
@@ -96,7 +97,6 @@ lplot=plt.subplot(1,2,1)
 rplot=plt.subplot(1,2,2)
 for asim in np.arange(30):
     NumPos = data.simulate()
-
     LLspace = np.inner(logpcorr,NumPos) + np.inner(logpincorr, trials_arr-NumPos)
     maxidx = np.unravel_index( LLspace.argmax(), param_dims)
     p0 = [ alphas[maxidx[0]], betas[maxidx[1]], 0.5, lambdas[maxidx[2]] ]
@@ -104,11 +104,11 @@ for asim in np.arange(30):
     gof = fit1.eval_gof( data )
     log.info( str(gof) )
     log.info( "fitted params: %s " % str(fit1.params ) )
-    
     lplot.clear()
     lplot.contour( alphas, betas, np.max(LLspace,2))
     rplot.clear()
     rplot.plot( levels, NumPos, 'o' )
     rplot.plot( smoothrang, trials_per*fit1.eval( smoothrang), 'k-',lw=3 )
+    plt.ylim( 5,22)
     plt.show()
     plt.draw()
