@@ -213,6 +213,9 @@ class pf_generic():
             +(data.Ntrials-data.Ncorr)*np.log((data.Ntrials-expected)/(data.Ntrials-data.Ncorr+np.finfo(float).eps))));
         X2 = sum((data.Ncorr-expected)**2./expected/(1.-probs))
 
+        # Adding eps to avoid log(0) Nans
+        self.prinsNLL = -sum( data.Ncorr*np.log(probs+np.finfo(float).eps)+(data.Ntrials-data.Ncorr)*np.log(1.-probs+np.finfo(float).eps) )
+
         # Treutwein/Strasburger 1999 Eq 6 (likelihood of the data)
         L_ts = 2**(sum( data.Ntrials ))
         LL_ts = 0.0
@@ -223,7 +226,7 @@ class pf_generic():
             thisCorr = data.Ncorr[level]
             L_ts *= misc.comb( thisN, thisCorr ) * (probs[level]**thisCorr) * (1.0 - probs[level])**(thisN-thisCorr) 
             LL_ts += np.log(misc.comb( thisN, thisCorr )) + thisCorr*np.log(probs[level]) +np.log(1.0 - probs[level])*(thisN-thisCorr) 
-        return probs,LL,X2,L_ts,LL_ts
+        return probs,LL,X2,L_ts,LL_ts,self.prinsNLL
 
     def fitpf(self, params0, data, output_param_search=False, errfunc=errfunc_OO, which_stat_to_min=1):
         """Fit a psychometric function.
@@ -240,6 +243,29 @@ class pf_generic():
             return pout, self.searched_params
         else:
             return pout
+
+    # This may not belong here. Currently unused:
+    def findMaxGrid(self, x, param_grid):
+        global values
+
+        if getattr( x, '__iter__', False):
+            pass
+        else:
+            x = [x]
+
+        # OTHER method:
+        #try:
+            #iterator = iter(x)
+        #except:
+            #x = [x]
+
+        values = np.zeros( np.concatenate( ([len(x)], [len(p) for p in param_grid] ) ) )
+        for n0,p0 in enumerate(param_grid[0]):
+            for n1,p1 in enumerate(param_grid[1]):
+                for n2,p2 in enumerate(param_grid[2]):
+                    values[:,n0,n1,n2] = np.log(self.fn( x, [p0,p1,0.5,p2]))
+
+        return values
 
 class pf_stan(pf_generic):
     # Only things different: The eval can invert the slope, and uses Stan's param

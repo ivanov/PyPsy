@@ -1,12 +1,10 @@
-# for fitting a probit to data with an arbitrary lower asymptote
+# This file closely follows Prins' 'Figure3Scrutinize.m', which is an attempt
+# to reproduce Wichmann & Hill 2001 parameter search, especially with regard to
+# lapse rate.
 import numpy as np
 import matplotlib.pyplot as plt
-from pypsy.pf import ProbitLogit, fitpf
 import pypsy.pf as pf
-import sys
-import scipy.special as special
-
-from pypsy.utils import dprint
+import time
 
 import logging
 logging.basicConfig()
@@ -30,30 +28,87 @@ else:
 #fw2 = [4.7231,7.0918,7.9939,9.7128,10.6386,13.2050]
 #s2 levels should ~= this, which is copied from Prins' MATLAB code
 
+gridGrain = 150
 numtrials = 120
 numlevels = 6
+trials_per = 120/numlevels
 alpha = 10.0
 beta = 3.0
-lapse = 0.02
+lapse = 0.00
 levels_frac = np.array([.1,.3,.4,.6,.7,.9]) # Prins' s2
+params2=[alpha,beta,0,0] # Wichmann/Prins use this to gen some initial values
 params=[alpha,beta,0.5,lapse]
+
+alphas = np.logspace( *np.log10( pf.fn_weibull_inv(np.array([0.01,0.99]), params2) ), num=gridGrain )
+betas = np.logspace( -1.0, 2.0, gridGrain)
+gamma = 0.5
+lambdas = np.arange( 0, .06+np.finfo(float).eps, 0.005)
 
 # Model:
 fit1 =  pf.pf_generic( pf.fn_weibull, params, [0,1])
 
 # Data:
-levels = pf.fn_weibull_inv( levels_frac, [alpha,beta,0,0] )
-trials_arr = np.tile( numtrials/numlevels, numlevels)
+levels = pf.fn_weibull_inv( levels_frac, params2  )
+trials_arr = np.tile( trials_per, numlevels)
 data=pf.experiment(levels, trials_arr, pcorr=pf.fn_weibull( levels, [alpha,beta,0.5,0]) )
 data.simulate()
 
-params0 = [9.,2.]
+# Rebuild the huge grid of initial LogPs if we need to
+# Takes about 16.5 secs on my Thinkpad x60
+#
+# Like Prins, we keep it here for efficiency, but is arguable.
+try:
+    if logpcorr[0,0,0,0] != 0:
+            pass
+except NameError:
+    tic=time.time()
+    log.info( 'Building huge pcorr grid for search (happens once per session).')
+    param_grid = [alphas, betas, lambdas]
+    param_dims = [len(p) for p in param_grid]
 
-fit1.fitpf( params0, data )
-gof = fit1.eval_gof( data )
+    # To put levels first:
+    #logpcorr = np.zeros( np.concatenate( ([len(levels)], [len(p) for p in param_grid] ) ) )
+    #logpincorr = np.zeros( np.concatenate( ([len(levels)], [len(p) for p in param_grid] ) ) )
 
-log.info( str(gof) )
-#log.info( "probs same? %s" % str( np.all( gof[0]==probExpect) ) )
-#log.info( "LL same? %s" % str(gof[1]==LogLikf) )
-#log.info( "X2 same? %s" % str(gof[2]==LogLikX2) )
-log.info( "fitted params: %s " % str(testpf.params ) )
+    # To put levels last (eases some matrix arith)
+    logpcorr = np.zeros( np.append( param_dims, [len(levels)] ) )
+    logpincorr = np.zeros( np.append( param_dims, [len(levels)] ) )
+    # TODO: Speed me up!! Life is too short...
+    for n0,p0 in enumerate(param_grid[0]):
+        for n1,p1 in enumerate(param_grid[1]):
+            for n2,p2 in enumerate(param_grid[2]):
+                logpcorr[n0,n1,n2,:] = pf.fn_weibull( levels, [p0,p1,0.5,p2])
+
+    logpincorr = np.log(1.0-logpcorr)
+    # May have some log(0) to fix, they may cause us problems with min/max
+    logpincorr[ np.isinf( logpincorr) ] = np.log(np.finfo(float).eps )
+    logpcorr = np.log(logpcorr)
+    toc=time.time()
+
+# NumPos = PAL_PF_SimulateObserver, etc...
+NumPos = np.array([14,12,13,16,18,20]) # to confirm is working--enter simulation vals from Prins
+data = pf.experiment( levels, trials_arr, NumPos )
+smoothrang = np.linspace( levels[0], levels[-1], 30 )
+
+plt.ion()
+plt.figure()
+lplot=plt.subplot(1,2,1)
+rplot=plt.subplot(1,2,2)
+for asim in np.arange(30):
+    NumPos = data.simulate()
+
+    LLspace = np.inner(logpcorr,NumPos) + np.inner(logpincorr, trials_arr-NumPos)
+    maxidx = np.unravel_index( LLspace.argmax(), param_dims)
+    p0 = [ alphas[maxidx[0]], betas[maxidx[1]], 0.5, lambdas[maxidx[2]] ]
+    fit1.fitpf( p0, data )
+    gof = fit1.eval_gof( data )
+    log.info( str(gof) )
+    log.info( "fitted params: %s " % str(fit1.params ) )
+    
+    lplot.clear()
+    lplot.contour( alphas, betas, np.max(LLspace,2))
+    rplot.clear()
+    rplot.plot( levels, NumPos, 'o' )
+    rplot.plot( smoothrang, trials_per*fit1.eval( smoothrang), 'k-',lw=3 )
+    plt.show()
+    plt.draw()
