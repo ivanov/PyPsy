@@ -295,3 +295,10 @@ class pf_stan(pf_generic):
         self.probs = self.params[self.PARAM_LOWER] + (self.params[self.PARAM_UPPER]-self.params[self.PARAM_LOWER])*probs;
         return self.probs
 
+# TODO: 
+def convertToWichmann( params ):
+    paramsAdj = np.copy(params)
+    paramsAdj[0] = fn_weibull_inv( 0.5, [params[0], params[1], 0, 0] ) # find PSE
+    paramsAdj[1] = fn_weibull_deriv( paramsAdj[0], [params[0], params[1], 0, 0] ) # slope@PSE
+    return np.array(paramsAdj)
+
