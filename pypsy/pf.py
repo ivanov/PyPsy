@@ -110,27 +110,72 @@ def fitpf(params0, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,
         return pout
 
 class experiment():
-    def __init__( self, levels, Ntrials, Ncorr ):
-        self.levels = levels
-        self.Ntrials = Ntrials
-        self.Ncorr = Ncorr
+    def __init__( self, levels, Ntrials, Ncorr=None, pcorr=None ):
+        self.levels = np.array(levels)
+        self.Ntrials = np.array(Ntrials, dtype='int')
+        self.Ncorr = np.array(Ncorr)
 
+        if pcorr is None:
+            self.pcorr = Ncorr/np.array(Ntrials, dtype='float')
+        else:
+            self.pcorr = pcorr
+
+            if Ncorr is None:
+                self.simulate()
+
+    def simulate(self):
+        self.Ncorr = np.random.binomial( self.Ntrials, self.pcorr )
+        return self.Ncorr
+
+# For use inside pf_generic:
 def fn_probit(x):
     return .5*(scipy.special.erf(x/np.sqrt(2.))+1.);
 def fn_logit(x):
     return 1./(1.+np.exp(-x));
+
+def fn_logistic(x, params):
+    # params[0]==mu, params[1]==theta
+    return 1./(1.+np.exp(-(x-params[0])/params[1]));
+
+# TODO: Put these in a class abstracting a fn, params,
+# deriv and inverse?
+
+# TODO: Validation!!
+# weibull([10,3,0,0])
+#fw2 = [4.7231,7.0918,7.9939,9.7128,10.6386,13.2050]
+# From Wichmann&Hill/Prins:
+# pse = weibull_inv(0.5, [10,3,0,0])
+# pse ~ 8.85
+# weibull( pse, [10,3,0,0] ) ~ 0.5
+# weibull_deriv( pse, [10,3,0,0] ) ~ 0.1175 (Wichmann says '0.118' in paper)
+def fn_weibull(x, params):
+    [alpha,beta,gamma,lambd]=params
+    y = gamma + (1 - gamma - lambd)*(1 - np.exp(-(x/alpha)**beta))
+    return y
+def fn_weibull_inv(x, params):
+    [alpha,beta,gamma,lambd]=params
+    c = (x-gamma)/(1.0-gamma-lambd)
+    temp1 = -np.log(1.0-c)
+    # Really just want alpha*temp**(1/beta), but
+    # Python doesn't like to take a fractional power
+    # of a negative number (MATLAB seems okay with that)
+    y = alpha*np.exp((1.0/beta)*np.log(temp1))
+    return y
+def fn_weibull_deriv( x, params):
+    [alpha,beta,gamma,lambd]=params
+    y = (1-gamma-lambd)*np.exp(-(x/alpha)**beta)*(x/alpha)**(beta-1)*beta/alpha
+    return y
 
 def errfunc_OO(*args):
     "simple wrapper for PF class fitting using fmin"
     "0: (params that fmin is exploring...)"
     "1: self"
     "2: data"
-    "3: which stat to use (1=LL, 2=X2, 3=L_TrautweinStrasburger)"
+    "3: which stat to use (1=LL, 2=X2, 3=L_TreutweinStrasburger)"
     obj=args[1]
 
-    # TODO: Make this smarter, instead of just shoving the two free parameters arbitrarily
-    obj.params[0] = args[0][0]
-    obj.params[1] = args[0][1]
+    for learnable_param_idx,target_param_idx in enumerate(obj.params_free):
+        obj.params[target_param_idx] = args[0][learnable_param_idx]
 
     return obj.eval_gof(args[2])[args[3]]
 
@@ -141,23 +186,23 @@ class pf_generic():
     PARAM_LOWER=2
     PARAM_UPPER=3
     PARAM_INVERT_SLOPE=4
-    def __init__(self, fn, params):
+    def __init__(self, fn, params, params_free=np.array([0,1]), invert_slope=False):
         self.fn = fn
         self.params = params
+        self.params_free = params_free
+        self.invert_slope = invert_slope
 
     # TODO: memoize results of next two functions?
     def eval( self, x):
-        if (len(self.params)<5) or (self.params[self.PARAM_INVERT_SLOPE]==True):
-            # default if not specified 
+        if self.invert_slope:
             spread = 1.0/self.params[self.PARAM_SPREAD]
         else:
             spread = self.params[self.PARAM_SPREAD]
-
         pse = self.params[self.PARAM_PSE]
         # rescale ordinate
-        eval_x=(x-pse)*spread
-        probs = self.fn( eval_x )
-        self.probs = self.params[self.PARAM_LOWER] + (self.params[self.PARAM_UPPER]-self.params[self.PARAM_LOWER])*probs;
+        #eval_x=(x-pse)*spread
+        self.probs = self.fn( x, self.params )
+        #self.probs = self.params[self.PARAM_LOWER] + (1.0 - self.params[self.PARAM_UPPER]-self.params[self.PARAM_LOWER])*probs;
         return self.probs
 
     def eval_gof( self, data):
@@ -170,13 +215,15 @@ class pf_generic():
 
         # Treutwein/Strasburger 1999 Eq 6 (likelihood of the data)
         L_ts = 2**(sum( data.Ntrials ))
+        LL_ts = 0.0
         #L_ts = 1.0
         for level in np.arange( len(data.levels) ):
             # TODO: is right to use observed data or function values?: next two lines can chg to try fitted
             thisN = data.Ntrials[level]
             thisCorr = data.Ncorr[level]
             L_ts *= misc.comb( thisN, thisCorr ) * (probs[level]**thisCorr) * (1.0 - probs[level])**(thisN-thisCorr) 
-        return probs,LL,X2,L_ts
+            LL_ts += np.log(misc.comb( thisN, thisCorr )) + thisCorr*np.log(probs[level]) +np.log(1.0 - probs[level])*(thisN-thisCorr) 
+        return probs,LL,X2,L_ts,LL_ts
 
     def fitpf(self, params0, data, output_param_search=False, errfunc=errfunc_OO, which_stat_to_min=1):
         """Fit a psychometric function.
@@ -187,9 +234,31 @@ class pf_generic():
         pout = out[0]  # Y
         warn = out[4]; params0 = out[0]
         pfinal = out[0]  # Y
-        searched_params = np.array( out[5] )
+        self.searched_params = np.array( out[5] )
     
         if output_param_search:
-            return pout, searched_params
+            return pout, self.searched_params
         else:
             return pout
+
+class pf_stan(pf_generic):
+    # Only things different: The eval can invert the slope, and uses Stan's param
+    # interpretation method, which is nonstandard. (vs. Prins/Wichmann)
+    # In practice this can probably be removed and moved into
+    # one of the pf_functions, I think...
+    # This only works with logit and (maybe) probit.
+    def __init__(self, fn, params, params_free=np.array([0,1]), invert_slope=True):
+        pf_generic.__init__(self,fn,params,params_free,invert_slope)
+
+    def eval( self, x):
+        if self.invert_slope:
+            spread = 1.0/self.params[self.PARAM_SPREAD]
+        else:
+            spread = self.params[self.PARAM_SPREAD]
+        pse = self.params[self.PARAM_PSE]
+        # rescale ordinate
+        eval_x=(x-pse)*spread
+        probs = self.fn( eval_x ) 
+        self.probs = self.params[self.PARAM_LOWER] + (self.params[self.PARAM_UPPER]-self.params[self.PARAM_LOWER])*probs;
+        return self.probs
+

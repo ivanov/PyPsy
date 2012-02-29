@@ -31,7 +31,7 @@ log.info('*'*30)
 
 dataset = 1 #1 for p. 69 data,  2 for p. 94 data
 numBootstraps = 0
-plot_opt = 'both'
+plot_opt = 'none'
 param_Init =  None
 ProbitOrLogit=4;
 #1 is probit, 2 is logit (probit means cumulative normal, prins slope) 
@@ -243,7 +243,7 @@ log.info ("Comparing to new OO method" )
 LogLikf, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,1)
 LogLikX2, probExpect=ProbitLogit(pfinal, StimLevels, NumPos, Ntrials, LowerAsymptote, ProbitOrLogit,2)
 
-testpf =  pf.pf_generic( pf.fn_logit, [params0[0], params0[1], 0.5, 1., True] )
+testpf =  pf.pf_stan( pf.fn_logit, [params0[0], params0[1], 0.5, 1., True] )
 testdata = pf.experiment( StimLevels, Ntrials, NumPos )
 gof = testpf.eval_gof( testdata )
 log.info( str(gof) )
