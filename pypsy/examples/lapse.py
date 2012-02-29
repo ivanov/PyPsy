@@ -91,9 +91,9 @@ except NameError:
 NumPos = np.array([11,12,13,16,18,20]) # to confirm is working--enter simulation vals from Prins
 NumPos = np.array([11,12,15,17,17,19]) # to confirm is working--enter simulation vals from Prins
 data = pf.experiment( levels, trials_arr, NumPos )
-smoothrang = np.linspace( levels[0], levels[-1], 30 )
 
 if doPlots:
+    smoothrang = np.linspace( levels[0], levels[-1], 30 )
     plt.ion()
     plt.figure()
     lplot=plt.subplot(1,2,1)
@@ -101,17 +101,19 @@ if doPlots:
 
 fit_params = np.zeros( (nsims,len(params)) )
 fit_LLs = np.zeros( nsims )
+fit_data = np.zeros( (nsims, len(levels)) )
 for asim in np.arange(nsims):
     if (asim%10)==0:
-        log.info( '%d/%d' % (asim,nsims))
+        log.warning( '%d/%d' % (asim,nsims))
     NumPos = data.simulate()
     LLspace = np.inner(logpcorr,NumPos) + np.inner(logpincorr, trials_arr-NumPos)
     maxidx = np.unravel_index( LLspace.argmax(), param_dims)
     p0 = [ alphas[maxidx[0]], betas[maxidx[1]], lambdas[maxidx[2]] ]
     fit1.fitpf( p0, data )
-    fit_params[asim] = fit1.params
     gof = fit1.eval_gof( data )
+    fit_params[asim] = fit1.params
     fit_LLs[asim] = fit1.prinsNLL
+    fit_data[asim] = NumPos
     log.info( str(gof) )
     log.info( "fitted params: %s " % str(fit1.params ) )
     if doPlots:

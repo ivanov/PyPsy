@@ -240,7 +240,6 @@ class pf_generic():
         #while warn != 0:
         if params0[2]==0.0:
             params0[2]=0.00025 # like in PAL_minimize
-        print params0
         out = optimize.fmin(errfunc_OO, params0, args=(self,data,which_stat_to_min), full_output=1, retall=True, disp=0);
         pout = out[0]  # Y
         warn = out[4]; params0 = out[0]
