@@ -3,6 +3,8 @@ import numpy as np
 import scipy.special as special
 import matplotlib.pyplot as plt
 import pypsy.pf as pf
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 np.set_printoptions(suppress=True)
 
 def dprint(d=None,**kwargs):
@@ -199,9 +201,14 @@ def fake_dprime(h, f=None):
     dprime = z * np.sqrt(2)
     return dprime
 
-def param_scatter(params, true_params, idxOfLapse=3):
+def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=False, plot_marginals=False):
+    global mean0, covar0, se0
 
-    fit_params_adj = np.array( [pf.convertToWichmann( p ) for p in params] )
+    if needToConvert:
+        fit_params_adj = np.array( [pf.convertToWichmann( p ) for p in params] )
+    else:
+        fit_params_adj = np.copy(params)
+
     true_pse = pf.fn_weibull_inv(0.5, true_params )
     true_slope = pf.fn_weibull_deriv( true_pse, true_params )
 
@@ -209,19 +216,99 @@ def param_scatter(params, true_params, idxOfLapse=3):
     laps_uppers = np.where( fit_params_adj[:,idxOfLapse] >= 0.0599)[0]
     laps_mids = np.where( np.all((fit_params_adj[:,idxOfLapse] >= 0.0001,fit_params_adj[:,idxOfLapse] < 0.0599),0) )[0]
     
-    plt.figure()
-    plt.plot( fit_params_adj[laps_lowers,0], fit_params_adj[laps_lowers,1], 'x', label='est. lapse <' )
-    plt.plot( fit_params_adj[laps_mids,0], fit_params_adj[laps_mids,1], '*', label='est. lapse =' )
-    plt.plot( fit_params_adj[laps_uppers,0], fit_params_adj[laps_uppers,1], 'o', label='est. lapse >' )
-    plt.legend( loc='best')
-    plt.axis('tight')
-    plt.loglog()
+    if ax==None:
+        fig=plt.figure()
+        ax = fig.add_subplot(1,1,1)
 
-    x = plt.xlim()
-    y = plt.ylim()
-    plt.plot( [true_pse, true_pse], [y[0], y[1]], 'k:' )
-    plt.plot( [x[0], x[1]], [true_slope, true_slope], 'k:' )
-    plt.xlabel('pse (~%.4g)' % true_pse )
-    plt.ylabel('slope@pse (~%.4g)' % true_slope)
-    
-    plt.show()
+    if plot_marginals:
+        divider = make_axes_locatable( ax)
+        # create a new axes with a height of 1.2 inch above the axScatter
+        axMargx = divider.new_vertical(1.2, pad=0.22, sharex=ax)
+        # create a new axes with a width of 1.2 inch on the right side of the
+        # axScatter
+        axMargy = divider.new_horizontal(1.2, pad=0.22, sharey=ax)
+
+    ax.plot( fit_params_adj[laps_lowers,0], fit_params_adj[laps_lowers,1], 'bx', label='$\lambda_{est}=0$' )
+    ax.plot( fit_params_adj[laps_mids,0], fit_params_adj[laps_mids,1], 'g*', label='$\lambda_{est}\/{o.w.}$' )
+    ax.plot( fit_params_adj[laps_uppers,0], fit_params_adj[laps_uppers,1], 'r.', label='$\lambda_{est}=0.6$' )
+    ax.legend( loc='upper left')
+    ax.axis('tight')
+    ax.loglog()
+
+    x = ax.get_xlim()
+    y = ax.get_ylim()
+    ax.plot( [true_pse, true_pse], [y[0], y[1]], 'k:' )
+    ax.plot( [x[0], x[1]], [true_slope, true_slope], 'k:' )
+    ax.set_xlabel('pse (~%.4g)' % true_pse )
+    ax.set_ylabel('slope@pse (~%.4g)' % true_slope)
+    #plt.show()
+
+    mean0 = np.mean( fit_params_adj[laps_lowers], 0 )
+    mean1 = np.mean( fit_params_adj[laps_mids], 0 )
+    mean2 = np.mean( fit_params_adj[laps_uppers], 0 )
+    ax.plot( [true_pse, true_pse], [y[0], y[1]], 'k:' )
+    ax.plot( [x[0], x[1]], [true_slope, true_slope], 'k:' )
+
+    #ax.plot( [mean0[0], mean0[0]], [y[0], y[1]], 'b:' )
+    #fam = 'Times'
+    #fsize = 12
+    if plot_marginals:
+        fig.add_axes(axMargx)
+        #plt.title(mytitle, family=fam, size=fsize)
+        #axMargx.plot( np.sum( data, 0 ))
+        #axMargx.bar( np.arange(np.shape(data)[0])-0.5, np.sum( data, 0 ))
+        #axMargx.bar( np.sum(fit_params_adj,0) )
+        axMargx.hist( fit_params_adj[:,0] )
+        plt.grid()
+        #xlabel( xlab )
+        #xticks_letters();
+        #yticks_letters();
+        fig.add_axes(axMargy)
+        #axMargy.barh( np.arange(np.shape(data)[0])-0.5, np.sum( data, 1 ))
+        axMargy.hist( fit_params_adj[:,1], orientation='vertical' )
+        #pygrid()
+        #axis('tight')
+        #xticks_letters( () )
+        #yticks_letters();
+        #oldticks = xticks()[0]
+        #xticks(oldticks, [str(oldticks[i]) for i in arange(len(oldticks))], rotation=-80, size=fsize )
+
+    covarp=np.cov(fit_params_adj.T);
+    sep=np.sqrt(np.diag(covarp))
+    corp=covarp/(sep.T*sep);
+    corrp=[corp[1,0],corp[idxOfLapse,0],corp[idxOfLapse,1]]
+
+    covar0 = np.cov(fit_params_adj[laps_lowers].T); se0 = np.sqrt( np.diag( covar0))
+    covar1 = np.cov(fit_params_adj[laps_lowers].T); se1 = np.sqrt( np.diag( covar1))
+    covar2 = np.cov(fit_params_adj[laps_lowers].T); se2 = np.sqrt( np.diag( covar2))
+
+    tiny=8
+    covartop = 0.3
+    hite = 0.05
+    ax.text( 0.05, covartop, r'$corr_{\alpha,\beta}$=%.4g' % corrp[0],
+            horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
+    ax.text( 0.05, covartop-hite, r'$corr_{\alpha,\lambda}$=%.4g' % corrp[1],
+            horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
+    ax.text( 0.05, covartop-2*hite, r'$corr_{\beta,\lambda}$=%.4g' % corrp[2],
+            horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
+
+    parmstop = 0.12
+    hite2 = 0.04
+    ax.text( 0.05, parmstop, '$\mu_0$=%s' % (mean_se_string(mean0, se0)),
+            horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, size=tiny)
+    ax.text( 0.05, parmstop-hite2, '$\mu_1$=%s' % (mean_se_string(mean1, se1)),
+            horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, size=tiny)
+    ax.text( 0.05, parmstop-hite2*2, '$\mu_2$=%s' % (mean_se_string(mean2, se2)),
+            horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, size=tiny)
+
+    return covarp, sep, corp, corrp
+
+def mean_se_string(means,ses):
+    thestr = ""
+    for n in np.arange(len(means)-1):
+        if n > 0:
+            thestr += ', '
+        thestr += '%.4g$\pm$%.4g' % (means[n],ses[n])
+    return thestr
+
+
