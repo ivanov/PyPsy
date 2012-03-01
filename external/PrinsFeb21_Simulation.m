@@ -15,10 +15,10 @@ warningstates = warning('query','all');%avoids inconsequential Log of Zero
 warning off all                        %warnings                                         
 
 doplot = 0;
-s = 2
-Ntrial = 120
-numSims = 100
-lapseGen = 0.01 
+s = 1
+Ntrial = 960
+numSims = 200
+lapseGen = 0.05
 stepThru = 'n';
 
 while Ntrial ~= 120 && Ntrial ~= 240 && Ntrial ~= 480 && Ntrial ~= 960
@@ -533,3 +533,18 @@ covar=cov(paramsAdj);
 SEAdj=sqrt(diag(covar))'
 cor=covar./(SEAdj'*SEAdj);
 correlAdj=[cor(1,2) cor(1,3) cor(2,3)]
+
+loidx = find(params(:,3)<.0001);
+hiidx = find(params(:,3)>.0599);
+mididx =find(params(:,3)>.0001&params(:,3)<.0599);
+figure;
+loglog( paramsAdj(loidx,1), paramsAdj(loidx,2), 'rx' )
+hold on;
+loglog( paramsAdj(mididx,1), paramsAdj(mididx,2), 'go' )
+hold on;
+loglog( paramsAdj(hiidx,1), paramsAdj(hiidx,2), 'b*' )
+axis('tight')
+legend( 'lo', 'middle', 'hi', 'Location', 'best' )
+
+sim_type =  ['s', num2str(s), '_', num2str(Ntrial), '_', num2str(numSims), '_', num2str(lapseGen) ]
+save(sim_type, 'params', 'paramsAdj')
