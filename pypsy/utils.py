@@ -279,8 +279,8 @@ def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=Fals
     corrp=[corp[1,0],corp[idxOfLapse,0],corp[idxOfLapse,1]]
 
     covar0 = np.cov(fit_params_adj[laps_lowers].T); se0 = np.sqrt( np.diag( covar0))
-    covar1 = np.cov(fit_params_adj[laps_lowers].T); se1 = np.sqrt( np.diag( covar1))
-    covar2 = np.cov(fit_params_adj[laps_lowers].T); se2 = np.sqrt( np.diag( covar2))
+    covar1 = np.cov(fit_params_adj[laps_mids].T); se1 = np.sqrt( np.diag( covar1))
+    covar2 = np.cov(fit_params_adj[laps_uppers].T); se2 = np.sqrt( np.diag( covar2))
 
     tiny=8
     covartop = 0.3
@@ -294,11 +294,11 @@ def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=Fals
 
     parmstop = 0.12
     hite2 = 0.04
-    ax.text( 0.05, parmstop, '$\mu_0$=%s' % (mean_se_string(mean0, se0)),
+    ax.text( 0.05, parmstop, '$\mu_{0.0}$=%s' % (mean_se_string(mean0, se0)),
             horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, size=tiny)
-    ax.text( 0.05, parmstop-hite2, '$\mu_1$=%s' % (mean_se_string(mean1, se1)),
+    ax.text( 0.05, parmstop-hite2, '$\mu$=%s' % (mean_se_string(mean1, se1)),
             horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, size=tiny)
-    ax.text( 0.05, parmstop-hite2*2, '$\mu_2$=%s' % (mean_se_string(mean2, se2)),
+    ax.text( 0.05, parmstop-hite2*2, '$\mu_{0.06}$=%s' % (mean_se_string(mean2, se2)),
             horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, size=tiny)
 
     return covarp, sep, corp, corrp
