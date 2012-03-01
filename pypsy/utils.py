@@ -1,6 +1,8 @@
 "some functions for PyPsy"
 import numpy as np
 import scipy.special as special
+import matplotlib.pyplot as plt
+import pypsy.pf as pf
 np.set_printoptions(suppress=True)
 
 def dprint(d=None,**kwargs):
@@ -197,3 +199,29 @@ def fake_dprime(h, f=None):
     dprime = z * np.sqrt(2)
     return dprime
 
+def param_scatter(params, true_params, idxOfLapse=3):
+
+    fit_params_adj = np.array( [pf.convertToWichmann( p ) for p in params] )
+    true_pse = pf.fn_weibull_inv(0.5, true_params )
+    true_slope = pf.fn_weibull_deriv( true_pse, true_params )
+
+    laps_lowers = np.where( fit_params_adj[:,idxOfLapse] < 0.0001 )[0]
+    laps_uppers = np.where( fit_params_adj[:,idxOfLapse] >= 0.0599)[0]
+    laps_mids = np.where( np.all((fit_params_adj[:,idxOfLapse] >= 0.0001,fit_params_adj[:,idxOfLapse] < 0.0599),0) )[0]
+    
+    plt.figure()
+    plt.plot( fit_params_adj[laps_lowers,0], fit_params_adj[laps_lowers,1], 'x', label='est. lapse <' )
+    plt.plot( fit_params_adj[laps_mids,0], fit_params_adj[laps_mids,1], '*', label='est. lapse =' )
+    plt.plot( fit_params_adj[laps_uppers,0], fit_params_adj[laps_uppers,1], 'o', label='est. lapse >' )
+    plt.legend( loc='best')
+    plt.axis('tight')
+    plt.loglog()
+
+    x = plt.xlim()
+    y = plt.ylim()
+    plt.plot( [true_pse, true_pse], [y[0], y[1]], 'k:' )
+    plt.plot( [x[0], x[1]], [true_slope, true_slope], 'k:' )
+    plt.xlabel('pse (~%.4g)' % true_pse )
+    plt.ylabel('slope@pse (~%.4g)' % true_slope)
+    
+    plt.show()

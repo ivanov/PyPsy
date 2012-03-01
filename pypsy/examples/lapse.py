@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pypsy.pf as pf
 import time
+import pypsy.utils as ourutils
 
 import logging
 logging.basicConfig()
@@ -140,17 +141,5 @@ for asim in np.arange(nsims):
         plt.show()
         plt.draw()
 
-fit_params_adj = numpy.array( [pf.convertToWichmann( p ) for p in fit_params] )
+ourutils.param_scatter( fit_params, [10,3,0,0], 3)
 
-laps_middle = mean( fit_params_adj[:,3] )
-
-laps_lowers = np.where( fit_params_adj[:,3] < laps_middle )[0]
-laps_uppers = np.where( fit_params_adj[:,3] >= laps_middle )[0]
-
-plt.figure()
-plt.plot( fit_params_adj[laps_lowers,0], fit_params_adj[laps_lowers,1], 'x', label='lapse rate <' )
-plt.plot( fit_params_adj[laps_uppers,0], fit_params_adj[laps_uppers,1], 'o', label='lapse rate >' )
-plt.legend( loc='best')
-plt.axis('tight')
-plt.loglog()
-plt.show()
