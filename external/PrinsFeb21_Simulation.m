@@ -8,24 +8,29 @@
 
 clear all,
 
-s = RandStream.create('mt19937ar','seed',sum(100*clock)); %Do something different every time
-RandStream.setDefaultStream(s);
+%s = RandStream.create('mt19937ar','seed',sum(100*clock)); %Do something different every time
+%andStream.setDefaultStream(s);
 
 warningstates = warning('query','all');%avoids inconsequential Log of Zero
 warning off all                        %warnings                                         
 
-Ntrial = 0;                                        
+doplot = 0;
+s = 2
+Ntrial = 120
+numSims = 100
+lapseGen = 0.01 
+stepThru = 'n';
+
 while Ntrial ~= 120 && Ntrial ~= 240 && Ntrial ~= 480 && Ntrial ~= 960
     Ntrial = input('N (120, 240, 480, or 960): ');
 end
-numSims = input('Number of simulations (e.g., 2000): ');
-s = 0;
+%numSims = input('Number of simulations (e.g., 2000): ');
 while s < 1 || s > 7
     s = input('Placement regimen (1 through 7): ');
 end
-lapseGen = input('Generating lapse rate (0 through 0.05): ');
+%lapseGen = input('Generating lapse rate (0 through 0.05): ');
 
-stepThru = input('Step through by spacebar (y/n): ','s');
+%stepThru = input('Step through by spacebar (y/n): ','s');
 
 switch Ntrial   %Vary histogram axis limits etc. with N
     case 120
@@ -116,13 +121,16 @@ end
 
 paramsGen = [10 3 .5 lapseGen]; %generating parameters
 
+if doplot==1 % drc
 figure('units','pixels','position',[10 100 1300 500]);
+end
+
 [gridx gridy] = meshgrid(1:gridGrain,1:gridGrain);
 
 %Simulation loop
 for simulation = 1:numSims
     if mod(simulation,10) == 0    %for the impatient
- %       disp(int2str(simulation));
+        disp(int2str(simulation));
     end
 
     %simulate observer
@@ -156,6 +164,7 @@ for simulation = 1:numSims
 
     %%%%%%%Plot things
     
+    if doplot==1 % drc
     %%%%%%%%%%%contour
     
     clf('reset')    
@@ -260,6 +269,8 @@ for simulation = 1:numSims
     if strcmpi(stepThru,'y')
         pause
     end
+
+end % drc / doplot
     
     %transform to metric reported by Wichmann & Hill
     paramsFitAdj(simulation,1,1) = PF([paramsFit(simulation,1,1) paramsFit(simulation,1,2) 0 0],.5,'inverse');
@@ -516,7 +527,7 @@ SE=sqrt(diag(covar))'
 cor=covar./(SE'*SE);
 correl=[cor(1,2) cor(1,3) cor(2,3)]
 
-paramsAdj=squeeze(paramsFitAdj(:,1,[1 2 4]));
+paramsAdj=10.^squeeze(paramsFitAdj(:,1,[1 2 4]));
 meanParamsAdj=mean(paramsAdj)
 covar=cov(paramsAdj);
 SEAdj=sqrt(diag(covar))'
