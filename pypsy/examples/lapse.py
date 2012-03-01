@@ -28,15 +28,27 @@ else:
 #fw2 = [4.7231,7.0918,7.9939,9.7128,10.6386,13.2050]
 #s2 levels should ~= this, which is copied from Prins' MATLAB code
 
-nsims = 30
+try:
+    nsims 
+except NameError:
+    nsims=30
+
+try:
+    trials
+except NameError:
+    trials = 120
+
+try:
+    lapse
+except NameError:
+    lapse = 0.00
+
 doPlots = False
 gridGrain = 150
-numtrials = 120
 numlevels = 6
-trials_per = 120/numlevels
+trials_per = trials/numlevels
 alpha = 10.0
 beta = 3.0
-lapse = 0.00
 levels_frac = np.array([.1,.3,.4,.6,.7,.9]) # Prins' s2
 params2=[alpha,beta,0,0] # Wichmann/Prins use this to gen some initial values
 params=[alpha,beta,0.5,lapse]
@@ -88,8 +100,10 @@ except NameError:
     toc=time.time()
 
 # NumPos = PAL_PF_SimulateObserver, etc...
-NumPos = np.array([11,12,13,16,18,20]) # to confirm is working--enter simulation vals from Prins
+#NumPos = np.array([11,12,13,16,18,20]) # to confirm is working--enter simulation vals from Prins
+#NumPos = np.array([11,12,15,17,17,19]) # to confirm is working--enter simulation vals from Prins
 NumPos = np.array([11,12,15,17,17,19]) # to confirm is working--enter simulation vals from Prins
+NumPos=pf.fn_weibull( levels, [alpha,beta,0.5,0])*trials_arr
 data = pf.experiment( levels, trials_arr, NumPos )
 
 if doPlots:
@@ -125,3 +139,18 @@ for asim in np.arange(nsims):
         plt.ylim( 5,22)
         plt.show()
         plt.draw()
+
+fit_params_adj = numpy.array( [pf.convertToWichmann( p ) for p in fit_params] )
+
+laps_middle = mean( fit_params_adj[:,3] )
+
+laps_lowers = np.where( fit_params_adj[:,3] < laps_middle )[0]
+laps_uppers = np.where( fit_params_adj[:,3] >= laps_middle )[0]
+
+plt.figure()
+plt.plot( fit_params_adj[laps_lowers,0], fit_params_adj[laps_lowers,1], 'x', label='lapse rate <' )
+plt.plot( fit_params_adj[laps_uppers,0], fit_params_adj[laps_uppers,1], 'o', label='lapse rate >' )
+plt.legend( loc='best')
+plt.axis('tight')
+plt.loglog()
+plt.show()
