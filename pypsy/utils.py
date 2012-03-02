@@ -202,7 +202,7 @@ def fake_dprime(h, f=None):
     return dprime
 
 def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=False, plot_marginals=False):
-    global mean0, covar0, se0, x, fit_params_adj
+    global mean0, covar0, se0, x, fit_params_adj, theh, y, bins, axHisty
 
     if needToConvert:
         fit_params_adj = np.array( [pf.convertToWichmann( p ) for p in params] )
@@ -253,33 +253,28 @@ def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=Fals
     ax.plot( [true_pse, true_pse], [y[0], y[1]], 'k:' )
     ax.plot( [x[0], x[1]], [true_slope, true_slope], 'k:' )
 
-    #ax.plot( [mean0[0], mean0[0]], [y[0], y[1]], 'b:' )
     #fam = 'Times'
     #fsize = 12
     if plot_marginals:
-        binwidth = (x[1]-x[0]) / 50
-        #bins = np.logspace( x[0], x[1], 20 )
-        bins = np.arange( x[0], x[1]-binwidth, binwidth )
-        #plt.title(mytitle, family=fam, size=fsize)
-        #axMargx.plot( np.sum( data, 0 ))
-        #axMargx.bar( np.arange(np.shape(data)[0])-0.5, np.sum( data, 0 ))
-        #axMargx.bar( np.sum(fit_params_adj,0) )
-        fig.add_axes(axHistx)
-        axHistx.hist( fit_params_adj[:,0], bins=bins )
         ax.axis('tight')
-        #plt.grid()
-        #xlabel( xlab )
-        #xticks_letters();
-        #yticks_letters();
-        #fig.add_axes(axMargy)
-        ##axMargy.barh( np.arange(np.shape(data)[0])-0.5, np.sum( data, 1 ))
-        #axMargy.hist( fit_params_adj[:,1], orientation='vertical' )
-        #pygrid()
-        #axis('tight')
-        #xticks_letters( () )
-        #yticks_letters();
-        #oldticks = xticks()[0]
-        #xticks(oldticks, [str(oldticks[i]) for i in arange(len(oldticks))], rotation=-80, size=fsize )
+        x = ax.get_xlim()
+        y = ax.get_ylim()
+        fig.add_axes(axHistx)
+        fig.add_axes(axHisty)
+
+        binwidth = (x[1]-x[0]) / 50
+        bins = np.arange( x[0]-binwidth/0.5, x[1]+binwidth*2.5, binwidth )
+        axHistx.hist( fit_params_adj[:,0], bins=bins )
+        binwidth = (y[1]-y[0]) / 50
+        bins = np.logspace( np.log10(y[0]), np.log10(y[1]), 50, endpoint=False )
+        #axHisty.hist( fit_params_adj[:,1], bins=bins, orientation='horizontal' )
+        ax.axis('tight')
+        y = ax.get_ylim()
+
+        theh = np.histogram( fit_params_adj[:,1], bins=bins  )
+        wid = theh[1][1] - theh[1][0]
+        axHisty.barh( theh[1][:-1], theh[0], height=wid )
+        axHisty.set_ylim( y[0], y[1])
 
     covarp=np.cov(fit_params_adj.T);
     sep=np.sqrt(np.diag(covarp))
