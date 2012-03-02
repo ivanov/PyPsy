@@ -202,7 +202,7 @@ def fake_dprime(h, f=None):
     return dprime
 
 def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=False, plot_marginals=False):
-    global mean0, covar0, se0
+    global mean0, covar0, se0, x, fit_params_adj
 
     if needToConvert:
         fit_params_adj = np.array( [pf.convertToWichmann( p ) for p in params] )
@@ -219,14 +219,18 @@ def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=Fals
     if ax==None:
         fig=plt.figure()
         ax = fig.add_subplot(1,1,1)
+        ax.set_aspect(1.) # In the matplotlib gallery they say to do this
 
     if plot_marginals:
         divider = make_axes_locatable( ax)
         # create a new axes with a height of 1.2 inch above the axScatter
-        axMargx = divider.new_vertical(1.2, pad=0.22, sharex=ax)
+        #axMargx = divider.new_vertical(1.2, pad=0.22, sharex=ax)
         # create a new axes with a width of 1.2 inch on the right side of the
         # axScatter
-        axMargy = divider.new_horizontal(1.2, pad=0.22, sharey=ax)
+        #axMargy = divider.new_horizontal(1.2, pad=0.22, sharey=ax)
+        axHistx = divider.append_axes("top", size=1.2, pad=0.1, sharex=ax)
+        axHisty = divider.append_axes("right", size=1.2, pad=0.1, sharey=ax)
+
 
     ax.plot( fit_params_adj[laps_lowers,0], fit_params_adj[laps_lowers,1], 'bx', label='$\lambda_{est}=0$' )
     ax.plot( fit_params_adj[laps_mids,0], fit_params_adj[laps_mids,1], 'g*', label='$\lambda_{est}\/{o.w.}$' )
@@ -253,19 +257,23 @@ def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=Fals
     #fam = 'Times'
     #fsize = 12
     if plot_marginals:
-        fig.add_axes(axMargx)
+        binwidth = (x[1]-x[0]) / 50
+        #bins = np.logspace( x[0], x[1], 20 )
+        bins = np.arange( x[0], x[1]-binwidth, binwidth )
         #plt.title(mytitle, family=fam, size=fsize)
         #axMargx.plot( np.sum( data, 0 ))
         #axMargx.bar( np.arange(np.shape(data)[0])-0.5, np.sum( data, 0 ))
         #axMargx.bar( np.sum(fit_params_adj,0) )
-        axMargx.hist( fit_params_adj[:,0] )
-        plt.grid()
+        fig.add_axes(axHistx)
+        axHistx.hist( fit_params_adj[:,0], bins=bins )
+        ax.axis('tight')
+        #plt.grid()
         #xlabel( xlab )
         #xticks_letters();
         #yticks_letters();
-        fig.add_axes(axMargy)
-        #axMargy.barh( np.arange(np.shape(data)[0])-0.5, np.sum( data, 1 ))
-        axMargy.hist( fit_params_adj[:,1], orientation='vertical' )
+        #fig.add_axes(axMargy)
+        ##axMargy.barh( np.arange(np.shape(data)[0])-0.5, np.sum( data, 1 ))
+        #axMargy.hist( fit_params_adj[:,1], orientation='vertical' )
         #pygrid()
         #axis('tight')
         #xticks_letters( () )
