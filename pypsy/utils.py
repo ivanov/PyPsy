@@ -202,7 +202,6 @@ def fake_dprime(h, f=None):
     return dprime
 
 def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=False, plot_marginals=False):
-    global mean0, covar0, se0, x, fit_params_adj, theh, y, bins, axHisty
 
     if needToConvert:
         fit_params_adj = np.array( [pf.convertToWichmann( p ) for p in params] )
@@ -219,32 +218,33 @@ def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=Fals
     if ax==None:
         fig=plt.figure()
         ax = fig.add_subplot(1,1,1)
-        ax.set_aspect(1.) # In the matplotlib gallery they say to do this
 
     if plot_marginals:
         divider = make_axes_locatable( ax)
         # create a new axes with a height of 1.2 inch above the axScatter
-        #axMargx = divider.new_vertical(1.2, pad=0.22, sharex=ax)
+        axMargx = divider.new_vertical(1.2, pad=0.22, sharex=ax)
         # create a new axes with a width of 1.2 inch on the right side of the
         # axScatter
-        #axMargy = divider.new_horizontal(1.2, pad=0.22, sharey=ax)
-        axHistx = divider.append_axes("top", size=1.2, pad=0.1, sharex=ax)
-        axHisty = divider.append_axes("right", size=1.2, pad=0.1, sharey=ax)
-
+        # TODO: Figure out how to make the hists not overlap with the scatter
+        axMargy = divider.new_horizontal(1.2, pad=0.22, sharey=ax)
 
     ax.plot( fit_params_adj[laps_lowers,0], fit_params_adj[laps_lowers,1], 'bx', label='$\lambda_{est}=0$' )
     ax.plot( fit_params_adj[laps_mids,0], fit_params_adj[laps_mids,1], 'g*', label='$\lambda_{est}\/{o.w.}$' )
     ax.plot( fit_params_adj[laps_uppers,0], fit_params_adj[laps_uppers,1], 'r.', label='$\lambda_{est}=0.6$' )
     ax.legend( loc='upper left')
     ax.axis('tight')
-    ax.loglog()
 
-    x = ax.get_xlim()
+    if plot_marginals:
+        x= axMargx.get_xlim() # this is being used, NOT ax, somehow
+    else:
+        x = ax.get_xlim()
+
     y = ax.get_ylim()
-    ax.plot( [true_pse, true_pse], [y[0], y[1]], 'k:' )
-    ax.plot( [x[0], x[1]], [true_slope, true_slope], 'k:' )
+    ax.plot( [true_pse, true_pse], [fit_params_adj[:,1].min(), fit_params_adj[:,1].max()], 'k:' )
+    ax.plot( [fit_params_adj[:,0].min(), fit_params_adj[:,0].max()], [true_slope, true_slope], 'k:' )
     ax.set_xlabel('pse (~%.4g)' % true_pse )
     ax.set_ylabel('slope@pse (~%.4g)' % true_slope)
+    ax.loglog()
     #plt.show()
 
     mean0 = np.mean( fit_params_adj[laps_lowers], 0 )
@@ -253,28 +253,23 @@ def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=Fals
     ax.plot( [true_pse, true_pse], [y[0], y[1]], 'k:' )
     ax.plot( [x[0], x[1]], [true_slope, true_slope], 'k:' )
 
+    #ax.plot( [mean0[0], mean0[0]], [y[0], y[1]], 'b:' )
     #fam = 'Times'
     #fsize = 12
+    xbins = 30
+    ybins = 30
     if plot_marginals:
+        fig.add_axes(axMargx)
+        axMargx.hist( fit_params_adj[:,0], bins=xbins )
+        fig.add_axes(axMargy)
         ax.axis('tight')
-        x = ax.get_xlim()
-        y = ax.get_ylim()
-        fig.add_axes(axHistx)
-        fig.add_axes(axHisty)
-
-        binwidth = (x[1]-x[0]) / 50
-        bins = np.arange( x[0]-binwidth/0.5, x[1]+binwidth*2.5, binwidth )
-        axHistx.hist( fit_params_adj[:,0], bins=bins )
-        binwidth = (y[1]-y[0]) / 50
-        bins = np.logspace( np.log10(y[0]), np.log10(y[1]), 50, endpoint=False )
-        #axHisty.hist( fit_params_adj[:,1], bins=bins, orientation='horizontal' )
+        y = axMargy.get_ylim()
+        axMargy.set_yscale("log", nonposy='clip')
+        bins = 10**np.linspace( np.log10(y[0]), np.log10(y[1]), num=ybins )
+        axMargy.hist( fit_params_adj[:,1],orientation='horizontal', bins=bins )
+        oldticks = axMargy.get_xticklabels()
+        [tick.set_rotation(-90) for tick in oldticks]
         ax.axis('tight')
-        y = ax.get_ylim()
-
-        theh = np.histogram( fit_params_adj[:,1], bins=bins  )
-        wid = theh[1][1] - theh[1][0]
-        axHisty.barh( theh[1][:-1], theh[0], height=wid )
-        axHisty.set_ylim( y[0], y[1])
 
     covarp=np.cov(fit_params_adj.T);
     sep=np.sqrt(np.diag(covarp))
