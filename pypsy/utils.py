@@ -202,6 +202,7 @@ def fake_dprime(h, f=None):
     return dprime
 
 def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=False, plot_marginals=False):
+    global axMargx, axMargy
 
     if needToConvert:
         fit_params_adj = np.array( [pf.convertToWichmann( p ) for p in params] )
@@ -234,28 +235,19 @@ def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=Fals
     ax.legend( loc='upper left')
     ax.axis('tight')
 
-    if plot_marginals:
-        x= axMargx.get_xlim() # this is being used, NOT ax, somehow
-    else:
-        x = ax.get_xlim()
+    x = [fit_params_adj[:,0].min(), fit_params_adj[:,0].max()]
+    y = [fit_params_adj[:,1].min(), fit_params_adj[:,1].max()]
 
-    y = ax.get_ylim()
     ax.plot( [true_pse, true_pse], [fit_params_adj[:,1].min(), fit_params_adj[:,1].max()], 'k:' )
     ax.plot( [fit_params_adj[:,0].min(), fit_params_adj[:,0].max()], [true_slope, true_slope], 'k:' )
     ax.set_xlabel('pse (~%.4g)' % true_pse )
     ax.set_ylabel('slope@pse (~%.4g)' % true_slope)
     ax.loglog()
-    #plt.show()
 
     mean0 = np.mean( fit_params_adj[laps_lowers], 0 )
     mean1 = np.mean( fit_params_adj[laps_mids], 0 )
     mean2 = np.mean( fit_params_adj[laps_uppers], 0 )
-    ax.plot( [true_pse, true_pse], [y[0], y[1]], 'k:' )
-    ax.plot( [x[0], x[1]], [true_slope, true_slope], 'k:' )
 
-    #ax.plot( [mean0[0], mean0[0]], [y[0], y[1]], 'b:' )
-    #fam = 'Times'
-    #fsize = 12
     xbins = 30
     ybins = 30
     if plot_marginals:
@@ -263,7 +255,6 @@ def param_scatter(params, true_params, idxOfLapse=3, ax=None, needToConvert=Fals
         axMargx.hist( fit_params_adj[:,0], bins=xbins )
         fig.add_axes(axMargy)
         ax.axis('tight')
-        y = axMargy.get_ylim()
         axMargy.set_yscale("log", nonposy='clip')
         bins = 10**np.linspace( np.log10(y[0]), np.log10(y[1]), num=ybins )
         axMargy.hist( fit_params_adj[:,1],orientation='horizontal', bins=bins )
